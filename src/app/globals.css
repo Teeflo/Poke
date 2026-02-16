@@ -1,0 +1,321 @@
+@import "tailwindcss";
+
+@theme {
+  --font-main: var(--font-main), sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+
+  --color-primary: var(--primary);
+
+  /* Ombres Neumorphic */
+  --shadow-neu-out: var(--neu-shadow-light), var(--neu-shadow-dark);
+  --shadow-neu-in: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+
+  /* Version petite pour les boutons */
+  --shadow-neu-out-sm: var(--neu-shadow-sm-light), var(--neu-shadow-sm-dark);
+  --shadow-neu-in-sm: var(--neu-shadow-sm-inset-light), var(--neu-shadow-sm-inset-dark);
+}
+
+:root {
+  /* La base du Neumorphisme : un gris-blanc très doux */
+  --background: #e0e5ec;
+  --foreground: #4a5568;
+  --card: #e0e5ec;
+
+  --primary: #ff6b6b;
+
+  /* Neumorphic shadow tokens */
+  --neu-shadow-light: -12px -12px 24px rgba(255, 255, 255, 0.8);
+  --neu-shadow-dark: 12px 12px 24px rgba(163, 177, 198, 0.6);
+  --neu-shadow-inset-light: inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+  --neu-shadow-inset-dark: inset 5px 5px 10px rgba(163, 177, 198, 0.5);
+
+  --neu-shadow-sm-light: -6px -6px 12px rgba(255, 255, 255, 0.8);
+  --neu-shadow-sm-dark: 6px 6px 12px rgba(163, 177, 198, 0.6);
+  --neu-shadow-sm-inset-light: inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+  --neu-shadow-sm-inset-dark: inset 4px 4px 8px rgba(163, 177, 198, 0.6);
+
+  /* Stat bar inset */
+  --stat-inset: inset 2px 2px 5px #bebebe, inset -2px -2px 5px #ffffff;
+  --stat-bar-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+
+  /* Header shadow */
+  --header-shadow: 0 10px 20px -10px rgba(163, 177, 198, 0.4);
+}
+
+.dark {
+  --background: #1a1d23;
+  --foreground: #c9d1d9;
+  --card: #21252b;
+
+  --primary: #ff8787;
+
+  --neu-shadow-light: -12px -12px 24px rgba(40, 44, 52, 0.7);
+  --neu-shadow-dark: 12px 12px 24px rgba(0, 0, 0, 0.5);
+  --neu-shadow-inset-light: inset -5px -5px 10px rgba(40, 44, 52, 0.5);
+  --neu-shadow-inset-dark: inset 5px 5px 10px rgba(0, 0, 0, 0.4);
+
+  --neu-shadow-sm-light: -6px -6px 12px rgba(40, 44, 52, 0.6);
+  --neu-shadow-sm-dark: 6px 6px 12px rgba(0, 0, 0, 0.4);
+  --neu-shadow-sm-inset-light: inset -4px -4px 8px rgba(40, 44, 52, 0.5);
+  --neu-shadow-sm-inset-dark: inset 4px 4px 8px rgba(0, 0, 0, 0.4);
+
+  --stat-inset: inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(40, 44, 52, 0.5);
+  --stat-bar-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+
+  --header-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Reset doux */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* --- NEUMORPHIC UTILITIES --- */
+
+/* Carte standard (extrudée) */
+.neu-flat {
+  background-color: var(--card);
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    var(--neu-shadow-dark),
+    var(--neu-shadow-light);
+  transition: all 0.3s ease-in-out;
+}
+
+/* État survol */
+.neu-flat:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    15px 15px 30px rgba(163, 177, 198, 0.7),
+    -15px -15px 30px rgba(255, 255, 255, 0.9);
+}
+
+.dark .neu-flat:hover {
+  box-shadow:
+    15px 15px 30px rgba(0, 0, 0, 0.6),
+    -15px -15px 30px rgba(40, 44, 52, 0.8);
+}
+
+/* Boutons et éléments interactifs */
+.neu-btn {
+  background-color: var(--card);
+  color: var(--foreground);
+  border-radius: 9999px;
+  border: none;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  box-shadow:
+    var(--neu-shadow-sm-dark),
+    var(--neu-shadow-sm-light);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.neu-btn:hover {
+  color: var(--primary);
+  transform: scale(1.02);
+}
+
+.neu-btn:active,
+.neu-pressed {
+  box-shadow:
+    var(--neu-shadow-sm-inset-dark),
+    var(--neu-shadow-sm-inset-light);
+  transform: scale(0.98);
+}
+
+/* Bouton rond (icon only) */
+.neu-btn-icon {
+  background-color: var(--card);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    var(--neu-shadow-sm-dark),
+    var(--neu-shadow-sm-light);
+  transition: all 0.2s ease;
+}
+
+.neu-btn-icon:hover {
+  transform: scale(1.05);
+}
+
+.neu-btn-icon:active {
+  box-shadow:
+    var(--neu-shadow-sm-inset-dark),
+    var(--neu-shadow-sm-inset-light);
+  transform: scale(0.95);
+}
+
+/* Input enfoncé (inset) */
+.neu-input {
+  width: 100%;
+  background-color: var(--card);
+  border: none;
+  border-radius: 1.5rem;
+  padding: 1rem 1.5rem;
+  color: var(--foreground);
+  box-shadow:
+    var(--neu-shadow-inset-dark),
+    var(--neu-shadow-inset-light);
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+.neu-input:focus {
+  box-shadow:
+    var(--neu-shadow-inset-dark),
+    var(--neu-shadow-inset-light),
+    0 0 0 2px var(--primary);
+}
+
+/* Badges / Tags */
+.neu-tag {
+  border-radius: 9999px;
+  padding: 0.25rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow:
+    3px 3px 6px rgba(163, 177, 198, 0.5),
+    -3px -3px 6px rgba(255, 255, 255, 0.8);
+}
+
+.dark .neu-tag {
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.4),
+    -3px -3px 6px rgba(40, 44, 52, 0.5);
+}
+
+/* --- COMPAT CLASSES (fixing broken references) --- */
+
+/* Hero section text effect */
+.pixel-text-shadow {
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+}
+
+.dark .pixel-text-shadow {
+  text-shadow: 0 0 30px rgba(255, 135, 135, 0.4);
+}
+
+/* Legacy card class alias */
+.neo-pixel-card {
+  background-color: var(--card);
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    var(--neu-shadow-dark),
+    var(--neu-shadow-light);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Scrollbar douce */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--foreground);
+  opacity: 0.3;
+  border-radius: 20px;
+  border: 3px solid var(--background);
+}
+
+/* Scrollbar hide for horizontal scroll */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom animation for skeleton loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--card) 25%, rgba(163, 177, 198, 0.3) 37%, var(--card) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Smooth page transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.5;
+  }
+
+  90% {
+    opacity: 0.5;
+  }
+
+  100% {
+    top: 90%;
+    opacity: 0;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Type color glow for cards */
+.type-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.type-glow:hover {
+  box-shadow:
+    var(--neu-shadow-dark),
+    var(--neu-shadow-light),
+    0 0 30px var(--type-color, rgba(255, 107, 107, 0.3));
+}
