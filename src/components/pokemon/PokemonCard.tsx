@@ -78,7 +78,8 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
   const isTeam = isInTeam(pokemonId);
   
   // Handle type data from both REST and GraphQL formats
-  const types = pokemon.types || (pokemon as any).pokemon_v2_pokemontypes?.map((t: { pokemon_v2_type: { name: string } }) => ({ type: { name: t.pokemon_v2_type.name } })) || [];
+  const gqlData = pokemon as unknown as { pokemon_v2_pokemontypes?: { pokemon_v2_type: { name: string } }[] };
+  const types = pokemon.types || gqlData.pokemon_v2_pokemontypes?.map((t) => ({ type: { name: t.pokemon_v2_type.name } })) || [];
   const mainType = types[0]?.type?.name || 'normal';
   const color = TYPE_COLORS[mainType] || '#A8A77A';
 
@@ -120,11 +121,15 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
     const localizedNameEntry = species.names.find(n => n.language.name === resolvedLang) 
       || species.names.find(n => n.language.name === 'en');
     if (localizedNameEntry) displayName = localizedNameEntry.name;
-  } else if ((pokemon as any).localizedNames) {
-    const localizedNames = (pokemon as any).localizedNames as { language: string; name: string }[];
-    const localizedNameEntry = localizedNames.find((n) => n.language === resolvedLang)
-      || localizedNames.find((n) => n.language === 'en');
-    if (localizedNameEntry) displayName = localizedNameEntry.name;
+  } else {
+    const gqlSpeciesData = pokemon as unknown as { 
+      localizedNames?: { language: string; name: string }[];
+    };
+    if (gqlSpeciesData.localizedNames) {
+      const localizedNameEntry = gqlSpeciesData.localizedNames.find((n) => n.language === resolvedLang)
+        || gqlSpeciesData.localizedNames.find((n) => n.language === 'en');
+      if (localizedNameEntry) displayName = localizedNameEntry.name;
+    }
   }
 
   const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
@@ -166,6 +171,7 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
                 !isTeam && team.length >= 6 && "opacity-20 cursor-not-allowed"
               )}
               title={isTeam ? t('card.remove_team') : t('card.add_team')}
+              aria-label={isTeam ? t('card.remove_team') || 'Remove from team' : t('card.add_team') || 'Add to team'}
             >
               {isTeam ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             </motion.button>
@@ -183,6 +189,7 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
                 !isComp && compareList.length >= 3 && "opacity-20 cursor-not-allowed"
               )}
               title={isComp ? t('card.remove_compare') : t('card.add_compare')}
+              aria-label={isComp ? t('card.remove_compare') || 'Remove from comparison' : t('card.add_compare') || 'Add to comparison'}
             >
               <ArrowLeftRight className={cn("w-4 h-4 transition-transform", isComp && "scale-110")} />
             </motion.button>
@@ -197,7 +204,8 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
                   ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
                   : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60"
               )}
-              aria-label={isFav ? t('card.remove_favorite') : t('card.add_favorite')}
+              title={isFav ? t('card.remove_favorite') : t('card.add_favorite')}
+              aria-label={isFav ? t('card.remove_favorite') || 'Remove from favorites' : t('card.add_favorite') || 'Add to favorites'}
             >
               <Heart className={cn("w-4 h-4 transition-transform", isFav && "fill-current scale-110")} />
             </motion.button>

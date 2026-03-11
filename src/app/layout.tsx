@@ -33,6 +33,9 @@ export const metadata: Metadata = {
   }
 };
 
+import { Onboarding } from "@/components/layout/Onboarding";
+import { AppContent } from "./AppContent";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,8 +45,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
       <body className={`${mainFont.variable} antialiased bg-background text-foreground font-main`}>
         <Providers>
-          {children}
+          <AppContent>
+            {children}
+          </AppContent>
           <CompareBar />
+          <Onboarding />
           {process.env.NODE_ENV === "development" && <Agentation />}
           <Toaster />
         </Providers>

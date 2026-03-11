@@ -32,6 +32,8 @@ const STAT_LABELS: Record<string, string> = {
   'speed': 'SPD',
 };
 
+import Image from 'next/image';
+
 export default function ComparePage() {
   const { compareList, removeFromCompare, clearCompare } = usePokedexStore();
   const router = useRouter();
@@ -168,10 +170,11 @@ export default function ComparePage() {
                     <div className="text-xs font-black text-foreground/30 mb-2">{formatId(p.id)}</div>
                     <div className="relative w-40 h-40 mb-4">
                       <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl group-hover:bg-primary/5 transition-colors" />
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
+                      <Image 
                         src={p.sprites.other['official-artwork'].front_default || p.sprites.front_default} 
                         alt={p.name} 
+                        width={160}
+                        height={160}
                         className="w-full h-full object-contain relative z-10 drop-shadow-2xl group-hover:scale-110 transition-transform"
                       />
                     </div>

@@ -4,15 +4,17 @@ import Header from '@/components/layout/Header';
 import { usePokedexStore } from '@/store/pokedex';
 import { useQueries } from '@tanstack/react-query';
 import { getPokemonDetail, getTypeRelations } from '@/lib/api';
-import { TYPE_COLORS } from '@/types/pokemon';
+import { PokemonDetail, TYPE_COLORS } from '@/types/pokemon';
+import { TypeRelations } from '@/lib/api/rest';
 import { 
   Users, 
-  ShieldAlert, 
   ShieldCheck, 
   Info,
   Sword,
   X,
-  Plus
+  Plus,
+  Zap,
+  BarChart3
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -20,6 +22,9 @@ import { Button } from '@/components/ui/button';
 import { useMemo, useEffect, useState, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { analyzeTeam } from '@/lib/team-analysis';
+
+import Image from 'next/image';
 
 export default function TeamPage() {
   const { team, removeFromTeam, clearTeam } = usePokedexStore();
@@ -39,12 +44,12 @@ export default function TeamPage() {
     }))
   });
 
-  const pokemonData = pokemonQueries.map(q => q.data).filter(Boolean);
+  const pokemonData = pokemonQueries.map(q => q.data).filter((p): p is PokemonDetail => !!p);
 
   // Type relations for the whole team
   const typeRelationsQueries = useQueries({
     queries: pokemonData.flatMap(p => 
-      p!.types.map(t => ({
+      p.types.map(t => ({
         queryKey: ['typeRelations', t.type.name],
         queryFn: () => getTypeRelations(t.type.name),
         staleTime: 24 * 60 * 60 * 1000,
@@ -55,49 +60,16 @@ export default function TeamPage() {
   const analysis = useMemo(() => {
     if (pokemonData.length === 0 || typeRelationsQueries.some(q => q.isLoading)) return null;
 
-    const teamWeaknesses: Record<string, number> = {};
-    const teamResistances: Record<string, number> = {};
-    const typeCoverage: Set<string> = new Set();
-
-    Object.keys(TYPE_COLORS).forEach(t => {
-      teamWeaknesses[t] = 0;
-      teamResistances[t] = 0;
+    const relationsMap: Record<string, TypeRelations> = {};
+    typeRelationsQueries.forEach((q, i) => {
+      if (q.data) {
+        // Find which type this query was for
+        const typeName = pokemonData.flatMap(p => p.types)[i]?.type.name;
+        if (typeName) relationsMap[typeName] = q.data;
+      }
     });
 
-    let queryIndex = 0;
-
-    pokemonData.forEach(p => {
-      if (!p) return;
-      p.types.forEach(t => typeCoverage.add(t.type.name));
-
-      // Calculate weaknesses for this specific pokemon
-      const pokemonEffectiveness: Record<string, number> = {};
-      Object.keys(TYPE_COLORS).forEach(t => {
-        pokemonEffectiveness[t] = 1;
-      });
-
-      p.types.forEach(() => {
-        const relations = typeRelationsQueries[queryIndex]?.data?.damage_relations;
-        queryIndex++;
-        if (relations) {
-          relations.double_damage_from.forEach(t => { pokemonEffectiveness[t.name] *= 2; });
-          relations.half_damage_from.forEach(t => { pokemonEffectiveness[t.name] *= 0.5; });
-          relations.no_damage_from.forEach(t => { pokemonEffectiveness[t.name] *= 0; });
-        }
-      });
-
-      Object.entries(pokemonEffectiveness).forEach(([type, mult]) => {
-        if (type === 'unknown' || type === 'shadow') return;
-        if (mult > 1) teamWeaknesses[type]++;
-        if (mult < 1) teamResistances[type]++;
-      });
-    });
-
-    const majorWeaknesses = Object.entries(teamWeaknesses).filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1]);
-    const strongCoverage = Object.entries(teamResistances).filter(([, count]) => count >= 3).sort((a, b) => b[1] - a[1]);
-    const missingTypes = Object.keys(TYPE_COLORS).filter(t => !typeCoverage.has(t));
-
-    return { majorWeaknesses, strongCoverage, missingTypes, typeCoverage };
+    return analyzeTeam(pokemonData, relationsMap);
   }, [pokemonData, typeRelationsQueries]);
 
   if (!mounted) return null;
@@ -160,10 +132,11 @@ export default function TeamPage() {
                         
                         <div className="relative w-28 h-28 mb-4">
                           <div className="absolute inset-0 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors" />
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
+                          <Image 
                             src={p.sprites.other['official-artwork'].front_default || p.sprites.front_default} 
                             alt={p.name} 
+                            width={112}
+                            height={112}
                             className="w-full h-full object-contain relative z-10 drop-shadow-xl group-hover:scale-110 transition-transform"
                           />
                         </div>
@@ -206,65 +179,91 @@ export default function TeamPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-panel p-6 md:p-8 rounded-[2.5rem]"
+                className="space-y-8"
               >
-                <h3 className="text-2xl font-black mb-8 border-b border-white/10 pb-4 flex items-center gap-3">
-                  <Sword className="w-6 h-6 text-primary" />
-                  {t('team.analysis')}
-                </h3>
-
-                <div className="grid md:grid-cols-2 gap-8">
-                  {/* Weakness Alert */}
-                  <div className="space-y-4">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-red-500/60 flex items-center gap-2">
-                      <ShieldAlert className="w-3 h-3" /> {t('team.shared_weaknesses')}
-                    </h4>
-                    {analysis.majorWeaknesses.length > 0 ? (
-                      <div className="space-y-3">
-                        {analysis.majorWeaknesses.map(([type, count]) => (
-                          <div key={type} className="flex items-center justify-between p-3 bg-red-500/5 rounded-xl border border-red-500/10">
-                            <span className="text-xs font-black uppercase tracking-wider" style={{ color: TYPE_COLORS[type] }}>{type}</span>
-                            <div className="flex gap-1">
-                              {Array.from({ length: count }).map((_, i) => (
-                                <div key={i} className="w-2 h-2 rounded-full bg-red-500" />
-                              ))}
-                              <span className="text-[10px] font-bold text-foreground/40 ml-2">{count} {t('list.pokemon')}</span>
-                            </div>
-                          </div>
-                        ))}
-                        <p className="text-[10px] text-foreground/40 italic mt-2">
-                          {t('team.weakness_desc')}
-                        </p>
+                {/* Stats Averages */}
+                <div className="glass-panel p-6 md:p-8 rounded-[2.5rem]">
+                  <h3 className="text-2xl font-black mb-8 border-b border-white/10 pb-4 flex items-center gap-3">
+                    <BarChart3 className="w-6 h-6 text-primary" />
+                    {t('team.stats_averages')}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                    {[
+                      { label: 'HP', val: analysis.stats.avgHp, color: '#FF0000' },
+                      { label: 'ATK', val: analysis.stats.avgAtk, color: '#F08030' },
+                      { label: 'DEF', val: analysis.stats.avgDef, color: '#F8D030' },
+                      { label: 'SPA', val: analysis.stats.avgSpAtk, color: '#6890F0' },
+                      { label: 'SPD', val: analysis.stats.avgSpDef, color: '#78C850' },
+                      { label: 'SPE', val: analysis.stats.avgSpe, color: '#F85888' },
+                    ].map(s => (
+                      <div key={s.label} className="bg-secondary/20 p-4 rounded-2xl border border-white/5 text-center">
+                        <p className="text-[10px] font-black text-foreground/40 mb-1">{s.label}</p>
+                        <p className="text-xl font-black">{s.val}</p>
+                        <div className="w-full h-1 bg-white/5 rounded-full mt-2 overflow-hidden">
+                          <div className="h-full" style={{ backgroundColor: s.color, width: `${(s.val / 255) * 100}%` }} />
+                        </div>
                       </div>
-                    ) : (
-                      <div className="p-4 bg-green-500/5 rounded-xl border border-green-500/10 text-green-500/60 text-xs font-bold">
-                        {t('team.no_weakness')}
-                      </div>
-                    )}
+                    ))}
                   </div>
+                </div>
 
-                  {/* Coverage Strength */}
-                  <div className="space-y-4">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-green-500/60 flex items-center gap-2">
-                      <ShieldCheck className="w-3 h-3" /> {t('team.defensive_strengths')}
-                    </h4>
-                    {analysis.strongCoverage.length > 0 ? (
-                      <div className="space-y-3">
-                        {analysis.strongCoverage.map(([type, count]) => (
-                          <div key={type} className="flex items-center justify-between p-3 bg-green-500/5 rounded-xl border border-green-500/10">
-                            <span className="text-xs font-black uppercase tracking-wider" style={{ color: TYPE_COLORS[type] }}>{type}</span>
-                            <div className="flex gap-1">
-                              {Array.from({ length: count }).map((_, i) => (
-                                <div key={i} className="w-2 h-2 rounded-full bg-green-500" />
-                              ))}
-                              <span className="text-[10px] font-bold text-foreground/40 ml-2">{count} resists</span>
-                            </div>
+                <div className="glass-panel p-6 md:p-8 rounded-[2.5rem]">
+                  <h3 className="text-2xl font-black mb-8 border-b border-white/10 pb-4 flex items-center gap-3">
+                    <Sword className="w-6 h-6 text-primary" />
+                    {t('team.type_analysis')}
+                  </h3>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Defensive Analysis */}
+                    <div className="space-y-6">
+                      <h4 className="text-sm font-black uppercase tracking-widest text-foreground/60 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-green-500" /> {t('team.defensive')}
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-[10px] font-black text-red-500/60 uppercase mb-2">{t('team.weaknesses')}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {analysis.weaknesses.map(([type, val]) => (
+                              <div key={type} className="px-3 py-1.5 rounded-xl border border-red-500/10 bg-red-500/5 flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[type] }}>{type}</span>
+                                <span className="text-[10px] font-bold opacity-40">{val}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-green-500/60 uppercase mb-2">{t('team.resistances')}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {analysis.resistances.map(([type, val]) => (
+                              <div key={type} className="px-3 py-1.5 rounded-xl border border-green-500/10 bg-green-500/5 flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[type] }}>{type}</span>
+                                <span className="text-[10px] font-bold opacity-40">+{val}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-xs text-foreground/30 italic">{t('team.no_strengths')}</div>
-                    )}
+                    </div>
+
+                    {/* Offensive Analysis */}
+                    <div className="space-y-6">
+                      <h4 className="text-sm font-black uppercase tracking-widest text-foreground/60 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-yellow-500" /> {t('team.offensive')}
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-black text-yellow-500/60 uppercase mb-2">{t('team.super_effective_coverage')}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.coverage.map(([type, val]) => (
+                            <div key={type} className="px-3 py-1.5 rounded-xl border border-yellow-500/10 bg-yellow-500/5 flex items-center gap-2">
+                              <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[type] }}>{type}</span>
+                              <span className="text-[10px] font-bold opacity-40">{val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -303,6 +302,37 @@ export default function TeamPage() {
                     {(analysis?.missingTypes.length || 0) > 12 && <span className="text-[8px] font-bold">...</span>}
                   </div>
                 </div>
+
+                {analysis && (
+                  <div className="pt-4 border-t border-white/5 space-y-6">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-3">Type Coverage Gaps</p>
+                      <p className="text-[10px] text-foreground/50 mb-4">Consider adding these types to balance your team&apos;s defenses:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {analysis.suggestions.types.map(type => (
+                          <div key={type} className="flex-1 min-w-[80px] p-3 rounded-2xl bg-secondary/20 border border-white/5 text-center group hover:border-primary/30 transition-all cursor-default">
+                            <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[type] }}>{type}</span>
+                          </div>
+                        ))}
+                        {analysis.suggestions.types.length === 0 && <p className="text-[10px] italic text-foreground/30">Your team has no major type weaknesses!</p>}
+                      </div>
+                    </div>
+
+                    {analysis.suggestions.statFocus.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-orange-500/60 mb-3">Stat Deficiencies</p>
+                        <p className="text-[10px] text-foreground/50 mb-4">Your team could benefit from Pokémon with higher:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.suggestions.statFocus.map(stat => (
+                            <div key={stat} className="px-3 py-2 rounded-xl bg-orange-500/5 border border-orange-500/10 text-center">
+                              <span className="text-[10px] font-black uppercase text-orange-500">{stat}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -3,7 +3,7 @@
 import { useInfiniteQuery, useQuery, useQueries } from '@tanstack/react-query';
 import { usePokedexStore } from '@/store/pokedex';
 import { getPokemonList, getPokemonByType, getAllPokemonDetailed, getPokemonByGeneration } from '@/lib/api';
-import { PokemonBasicData } from '@/types/pokemon';
+import { PokemonBasicData, PokemonDetail, PokemonSpecies } from '@/types/pokemon';
 import { PokemonCard } from './PokemonCard';
 import { useInView } from 'framer-motion';
 import { useEffect, useRef, useMemo } from 'react';
@@ -89,7 +89,18 @@ export default function PokemonList() {
 
   // Logique de fusion des résultats
   const displayedPokemon = useMemo(() => {
-    let results: { name: string; url: string; height?: number; weight?: number; base_stat_total?: number; is_legendary?: boolean; is_mythical?: boolean; id: number; types?: string[] }[] = [];
+    let results: { 
+      name: string; 
+      url: string; 
+      height?: number; 
+      weight?: number; 
+      base_stat_total?: number; 
+      is_legendary?: boolean; 
+      is_mythical?: boolean; 
+      id: number; 
+      types?: string[];
+      localizedNames?: { language: string; name: string }[];
+    }[] = [];
 
     if (isBasicMode) {
       results = infiniteData?.pages.flatMap((page) => page.results).map(p => ({

@@ -126,6 +126,7 @@ export default function Header() {
               onClick={cycleTheme}
               className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-accent transition-colors shadow-sm"
               title={`${t('settings.theme')}: ${theme}`}
+              aria-label={t('settings.theme_toggle') || 'Toggle theme'}
             >
               {!mounted ? (
                 <div className="w-4 h-4 md:w-5 md:h-5" />
@@ -142,6 +143,7 @@ export default function Header() {
               onClick={toggleSettings}
               className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-accent transition-all shadow-sm"
               title={t('settings.title')}
+              aria-label={t('settings.title') || 'Open settings'}
             >
               <Settings className="w-4 h-4 md:w-5 md:h-5" />
             </motion.button>

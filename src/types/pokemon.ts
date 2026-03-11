@@ -96,8 +96,22 @@ export interface PokemonSpecies {
   habitat: {
     name: string;
   } | null;
-  is_legendary?: boolean;
-  is_mythical?: boolean;
+  is_legendary: boolean;
+  is_mythical: boolean;
+  egg_groups: {
+    name: string;
+    url: string;
+  }[];
+  gender_rate: number;
+  capture_rate: number;
+  base_happiness: number;
+  growth_rate: {
+    name: string;
+    url: string;
+  };
+  evolution_chain: {
+    url: string;
+  };
 }
 
 export interface PokemonBasicData {

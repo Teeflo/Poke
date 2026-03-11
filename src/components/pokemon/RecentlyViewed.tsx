@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 
+import Image from 'next/image';
+
 export default function RecentlyViewed() {
   const { history, clearHistory } = usePokedexStore();
   const [mounted, setMounted] = useState(false);
@@ -50,10 +52,11 @@ export default function RecentlyViewed() {
             >
               <div className="relative w-12 h-12">
                 <div className="absolute inset-0 bg-primary/5 rounded-full blur-lg group-hover:bg-primary/10 transition-colors" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
+                <Image 
                   src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`} 
                   alt={p.name} 
+                  width={48}
+                  height={48}
                   className="w-full h-full object-contain relative z-10 filter drop-shadow-sm"
                 />
               </div>

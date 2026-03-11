@@ -9,6 +9,8 @@ import { X, ArrowLeftRight, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
+import Image from 'next/image';
+
 export default function CompareBar() {
   const { compareList, removeFromCompare, clearCompare } = usePokedexStore();
 
@@ -52,10 +54,11 @@ export default function CompareBar() {
                     {q.isLoading ? (
                       <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                     ) : p ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img 
+                      <Image 
                         src={p.sprites.front_default} 
                         alt={p.name} 
+                        width={40}
+                        height={40}
                         className="w-full h-full object-contain filter drop-shadow-md"
                       />
                     ) : null}

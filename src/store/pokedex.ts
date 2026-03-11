@@ -61,6 +61,17 @@ interface PokedexStore {
 
   resetFilters: () => void;
 
+  // Quiz
+  quizHighScores: {
+    survival: number;
+    marathon: number;
+  };
+  updateQuizHighScore: (mode: 'survival' | 'marathon', score: number) => void;
+
+  // Onboarding
+  hasCompletedOnboarding: boolean;
+  setHasCompletedOnboarding: (completed: boolean) => void;
+
   // Settings
   isSettingsOpen: boolean;
   toggleSettings: () => void;
@@ -74,6 +85,7 @@ interface PokedexStore {
   // Language
   language: string;
   setLanguage: (lang: string) => void;
+  getLanguageId: () => number;
   systemLanguage: string;
   setSystemLanguage: (lang: string) => void;
 }
@@ -167,6 +179,22 @@ export const usePokedexStore = create<PokedexStore>()(
         showFavoritesOnly: false,
       }),
 
+      // Quiz
+      quizHighScores: {
+        survival: 0,
+        marathon: 0,
+      },
+      updateQuizHighScore: (mode, score) => set((state) => ({
+        quizHighScores: {
+          ...state.quizHighScores,
+          [mode]: Math.max(state.quizHighScores[mode], score)
+        }
+      })),
+
+      // Onboarding
+      hasCompletedOnboarding: false,
+      setHasCompletedOnboarding: (completed) => set({ hasCompletedOnboarding: completed }),
+
       isSettingsOpen: false,
       toggleSettings: () => set((state) => ({ isSettingsOpen: !state.isSettingsOpen })),
       soundEnabled: true,
@@ -177,6 +205,10 @@ export const usePokedexStore = create<PokedexStore>()(
 
       language: 'auto',
       setLanguage: (lang) => set({ language: lang }),
+      getLanguageId: () => {
+        const lang = get().language === 'auto' ? get().systemLanguage : get().language;
+        return lang === 'fr' ? 5 : 9;
+      },
       systemLanguage: typeof window !== 'undefined' ? (navigator.language.split('-')[0] || 'en') : 'en',
       setSystemLanguage: (lang) => set({ systemLanguage: lang }),
     }),
