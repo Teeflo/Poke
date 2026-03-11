@@ -10,7 +10,7 @@ import { cn, formatId } from '@/lib/utils';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
-import { SVGProps, memo, useCallback } from 'react';
+import { SVGProps, memo, useCallback, useState, useEffect } from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -51,6 +51,12 @@ export function PokemonCardSkeleton() {
 export const PokemonCard = memo(function PokemonCard({ name, url, initialData }: PokemonCardProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
   
   const { data, isLoading } = useQuery<{
     pokemon: Partial<PokemonDetail>;
@@ -77,16 +83,17 @@ export const PokemonCard = memo(function PokemonCard({ name, url, initialData }:
   const pokemonId = displayData?.pokemon?.id || 0;
 
   // Optimized selectors for better performance and reactivity
-  const isFav = usePokedexStore(state => state.favorites.includes(pokemonId));
-  const isComp = usePokedexStore(state => state.compareList.includes(pokemonId));
-  const isTeam = usePokedexStore(state => state.team.includes(pokemonId));
-  const caught = usePokedexStore(state => state.caughtPokemon.includes(pokemonId));
+  const store = usePokedexStore();
+  const isFav = mounted && store.favorites.includes(pokemonId);
+  const isComp = mounted && store.compareList.includes(pokemonId);
+  const isTeam = mounted && store.team.includes(pokemonId);
+  const caught = mounted && store.caughtPokemon.includes(pokemonId);
   
-  const teamFull = usePokedexStore(state => state.team.length >= 6);
-  const compareFull = usePokedexStore(state => state.compareList.length >= 3);
+  const teamFull = mounted && store.team.length >= 6;
+  const compareFull = mounted && store.compareList.length >= 3;
   
-  const language = usePokedexStore(state => state.language);
-  const systemLanguage = usePokedexStore(state => state.systemLanguage);
+  const language = store.language;
+  const systemLanguage = store.systemLanguage;
 
   const {
     addFavorite,
@@ -96,7 +103,7 @@ export const PokemonCard = memo(function PokemonCard({ name, url, initialData }:
     addToTeam,
     removeFromTeam,
     toggleCaught
-  } = usePokedexStore();
+  } = store;
 
   const prefetchDetails = useCallback(() => {
     if (!name) return;
@@ -170,14 +177,14 @@ export const PokemonCard = memo(function PokemonCard({ name, url, initialData }:
   };
 
   // Find localized name based on user selected language, or fallback to english, then the default API name
-  const resolvedLang = language === 'auto' ? systemLanguage : language;
+  const resolvedLang = mounted ? (language === 'auto' ? systemLanguage : language) : 'en';
   
   let displayName = pokemon.name!;
-  if (species?.names) {
+  if (mounted && species?.names) {
     const localizedNameEntry = species.names.find(n => n.language.name === resolvedLang) 
       || species.names.find(n => n.language.name === 'en');
     if (localizedNameEntry) displayName = localizedNameEntry.name;
-  } else {
+  } else if (mounted) {
     const gqlSpeciesData = pokemon as unknown as { 
       localizedNames?: { language: string; name: string }[];
     };

@@ -10,8 +10,13 @@ import { useTranslation } from 'react-i18next';
 export default function SearchBar() {
   const { searchTerm, setSearchTerm } = usePokedexStore();
   const [localSearch, setLocalSearch] = useState(searchTerm);
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Update local search when store search changes (e.g. clear filters)
   useEffect(() => {
@@ -53,8 +58,8 @@ export default function SearchBar() {
         <Input
           ref={inputRef}
           type="text"
-          placeholder={t('search.placeholder')}
-          value={localSearch}
+          placeholder={mounted ? t('search.placeholder') : 'Search Pokémon...'}
+          value={mounted ? localSearch : ''}
           onChange={(e) => setLocalSearch(e.target.value)}
           className="w-full pl-12 pr-12 py-7 rounded-full bg-secondary/30 backdrop-blur-xl border border-white/20 dark:border-white/10 text-foreground placeholder:text-foreground/40 text-lg font-medium shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-all focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50"
           aria-label={t('search.placeholder')}

@@ -9,8 +9,21 @@ import { getAllPokemonDetailed } from '@/lib/api';
 
 function CacheInitializer() {
   useEffect(() => {
-    // Preload all pokemon data for offline use and fast filtering
-    getAllPokemonDetailed().catch(console.error);
+    // Check if we already have the data in IndexedDB before preloading
+    const checkAndPreload = async () => {
+      try {
+        const { get } = await import('idb-keyval');
+        const cached = await get('all-pokemon-detailed');
+        if (!cached) {
+          await getAllPokemonDetailed();
+        }
+      } catch (error) {
+        console.error('Failed to check cache:', error);
+        getAllPokemonDetailed().catch(console.error);
+      }
+    };
+    
+    checkAndPreload();
   }, []);
 
   return null;

@@ -4,8 +4,6 @@ import Providers from "./providers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Agentation } from "agentation";
-import CompareBar from "@/components/pokemon/CompareBar";
-import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -34,10 +32,13 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pokédex — Explore All Pokémon",
     description: "Explore the world of Pokémon with our sleek soft-UI Pokédex.",
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
   }
 };
 
-import { Onboarding } from "@/components/layout/Onboarding";
 import { AppContent } from "./AppContent";
 
 export default function RootLayout({
@@ -52,10 +53,7 @@ export default function RootLayout({
           <AppContent>
             {children}
           </AppContent>
-          <CompareBar />
-          <Onboarding />
           {process.env.NODE_ENV === "development" && <Agentation />}
-          <Toaster />
         </Providers>
       </body>
     </html>

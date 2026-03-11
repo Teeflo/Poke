@@ -64,7 +64,7 @@ export default function FavoritesPage() {
                 {t('favorites.title')}
               </h2>
               <p className="text-foreground/40 font-bold uppercase tracking-widest text-xs mt-1">
-                {t('favorites.subtitle')} ({favoritePokemon.length} Pokémon)
+                {t('favorites.subtitle')} {mounted && `(${favoritePokemon.length} Pokémon)`}
               </p>
             </div>
           </div>

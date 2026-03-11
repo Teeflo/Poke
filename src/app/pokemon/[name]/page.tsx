@@ -27,11 +27,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePokedexStore } from '@/store/pokedex';
 import { cn, formatId } from '@/lib/utils';
 import React, { useState, useMemo, useEffect } from 'react';
-import { EvolutionChain } from '@/components/pokemon/EvolutionChain';
-import { AdvancedInfo } from '@/components/pokemon/AdvancedInfo';
-import { PokemonBuilds } from '@/components/pokemon/PokemonBuilds';
+import dynamic from 'next/dynamic';
+
+const EvolutionChain = dynamic(() => import('@/components/pokemon/EvolutionChain').then(m => m.EvolutionChain), {
+  loading: () => <div className="h-40 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary/20" /></div>
+});
+const AdvancedInfo = dynamic(() => import('@/components/pokemon/AdvancedInfo').then(m => m.AdvancedInfo), {
+  loading: () => <div className="h-40 animate-pulse bg-white/5 rounded-3xl" />
+});
+const PokemonBuilds = dynamic(() => import('@/components/pokemon/PokemonBuilds').then(m => m.PokemonBuilds), {
+  loading: () => <div className="h-40 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary/20" /></div>
+});
+const HeightComparison = dynamic(() => import('@/components/pokemon/HeightComparison').then(m => m.HeightComparison), {
+  loading: () => <div className="h-40 animate-pulse bg-white/5 rounded-3xl" />
+});
+
 import { Button } from '@/components/ui/button';
-import { HeightComparison } from '@/components/pokemon/HeightComparison';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from 'react-i18next';

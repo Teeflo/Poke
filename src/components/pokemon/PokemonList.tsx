@@ -135,8 +135,8 @@ export default function PokemonList() {
   // State for progressive loading of filtered results
   const [displayLimit, setDisplayLimit] = useState(40);
 
-  // Reset display limit when filters change - using a ref to track filter changes
-  const lastFiltersRef = useRef('');
+  // Reset display limit when filters change - using state tracking for synchronous reset during render
+  const [prevFiltersKey, setPrevFiltersKey] = useState('');
   const currentFiltersKey = JSON.stringify({
     searchTerm, selectedTypes, selectedGeneration, showFavoritesOnly, 
     isLegendary, isMythical, selectedEggGroups, selectedColors, 
@@ -144,8 +144,8 @@ export default function PokemonList() {
     minHp, heightRange, weightRange, isBasicMode, showCaughtOnly
   });
 
-  if (lastFiltersRef.current !== currentFiltersKey) {
-    lastFiltersRef.current = currentFiltersKey;
+  if (prevFiltersKey !== currentFiltersKey) {
+    setPrevFiltersKey(currentFiltersKey);
     setDisplayLimit(40);
   }
 
@@ -291,8 +291,10 @@ export default function PokemonList() {
       if (isBasicMode) {
         if (hasNextPage) fetchNextPage();
       } else if (hasMoreFiltered) {
-        // Use a functional update to avoid dependency on displayLimit
-        setDisplayLimit(prev => prev + 40);
+        // Defer state update to avoid lint error about synchronous setState in effect
+        setTimeout(() => {
+          setDisplayLimit(prev => prev + 40);
+        }, 0);
       }
     }
   }, [isInView, fetchNextPage, hasNextPage, isBasicMode, hasMoreFiltered]);

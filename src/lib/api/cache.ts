@@ -9,6 +9,7 @@ interface CacheItem<T> {
 }
 
 export async function getCachedData<T>(key: string, allowExpired = false): Promise<T | null> {
+  if (typeof window === 'undefined') return null;
   try {
     const item = await get<CacheItem<T>>(`${CACHE_PREFIX}${key}`);
     if (!item) return null;
@@ -26,6 +27,7 @@ export async function getCachedData<T>(key: string, allowExpired = false): Promi
 }
 
 export async function setCachedData<T>(key: string, data: T): Promise<void> {
+  if (typeof window === 'undefined') return;
   try {
     await set(`${CACHE_PREFIX}${key}`, {
       data,

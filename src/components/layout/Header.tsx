@@ -105,11 +105,15 @@ export default function Header() {
                   </span>
                   dex
                 </h1>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground/40">
-                    {caughtPokemon.length} / 1025 {t('detail.caught_status') || 'CAUGHT'}
-                  </span>
+                <div className="flex items-center gap-1 mt-0.5 min-h-[12px]">
+                  {mounted && (
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground/40">
+                        {caughtPokemon.length} / 1025 {t('detail.caught_status') || 'CAUGHT'}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </Link>
@@ -117,10 +121,10 @@ export default function Header() {
 
           <nav className="hidden lg:flex items-center gap-2 bg-secondary/40 backdrop-blur-md border border-white/10 p-1 rounded-full shadow-sm">
             <HeaderLink href="/team" variant="ghost" size="sm" className="rounded-full gap-2 font-black uppercase tracking-widest text-[10.5px] hover:bg-primary/10 hover:text-primary transition-all">
-              <Users className="w-3.5 h-3.5" /> {t('nav.team')}
+              <Users className="w-3.5 h-3.5" /> {mounted ? t('nav.team') : 'Team'}
             </HeaderLink>
             <HeaderLink href="/quiz" variant="ghost" size="sm" className="rounded-full gap-2 font-black uppercase tracking-widest text-[10.5px] hover:bg-primary/10 hover:text-primary transition-all">
-              <BrainCircuit className="w-3.5 h-3.5" /> {t('nav.quiz')}
+              <BrainCircuit className="w-3.5 h-3.5" /> {mounted ? t('nav.quiz') : 'Quiz'}
             </HeaderLink>
           </nav>
 
@@ -130,10 +134,10 @@ export default function Header() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-red-500/10 hover:text-red-500 transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
-                title={t('nav.favorites')}
+                title={mounted ? t('nav.favorites') : 'Favorites'}
               >
                 <Heart className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="hidden xl:inline text-xs font-black uppercase tracking-widest px-1">{t('nav.favorites')}</span>
+                <span className="hidden xl:inline text-xs font-black uppercase tracking-widest px-1">{mounted ? t('nav.favorites') : 'Favorites'}</span>
               </motion.div>
             </Link>
 
@@ -142,10 +146,10 @@ export default function Header() {
               whileTap={{ scale: 0.95 }}
               onClick={cycleLanguage}
               className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-accent transition-colors shadow-sm min-w-[40px] md:min-w-[48px] flex items-center justify-center gap-1.5"
-              title={`${t('settings.language')}: ${language}`}
+              title={mounted ? `${t('settings.language')}: ${language}` : 'Language'}
             >
               <Languages className="w-4 h-4 text-foreground/40" />
-              <span className="text-[10px] font-black uppercase">{language === 'auto' ? 'EN' : language}</span>
+              <span className="text-[10px] font-black uppercase">{mounted ? (language === 'auto' ? 'EN' : language) : 'EN'}</span>
             </motion.button>
 
             <motion.button
@@ -153,8 +157,8 @@ export default function Header() {
               whileTap={{ scale: 0.95 }}
               onClick={cycleTheme}
               className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-accent transition-colors shadow-sm"
-              title={`${t('settings.theme')}: ${theme}`}
-              aria-label={t('settings.theme_toggle') || 'Toggle theme'}
+              title={mounted ? `${t('settings.theme')}: ${theme}` : 'Theme'}
+              aria-label={mounted ? (t('settings.theme_toggle') || 'Toggle theme') : 'Toggle theme'}
             >
               {!mounted ? (
                 <div className="w-4 h-4 md:w-5 md:h-5" />
@@ -172,8 +176,8 @@ export default function Header() {
               whileTap={{ scale: 0.95 }}
               onClick={toggleSettings}
               className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-accent transition-all shadow-sm"
-              title={t('settings.title')}
-              aria-label={t('settings.title') || 'Open settings'}
+              title={mounted ? t('settings.title') : 'Settings'}
+              aria-label={mounted ? (t('settings.title') || 'Open settings') : 'Open settings'}
             >
               <Settings className="w-4 h-4 md:w-5 md:h-5" />
             </motion.button>
