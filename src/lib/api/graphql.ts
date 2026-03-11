@@ -31,8 +31,7 @@ export const getAllPokemonDetailed = async () => {
                 name
               }
             }
-            pokemon_v2_pokemonspeciesnames {
-              language_id
+            pokemon_v2_pokemonspeciesnames(where: {pokemon_v2_language: {name: {_in: ["en", "fr", "es", "de", "it", "ja", "ko"]}}}) {
               name
               pokemon_v2_language {
                 name

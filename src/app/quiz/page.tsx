@@ -27,7 +27,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { PokemonDetail } from '@/types/pokemon';
 import { useTranslation } from 'react-i18next';
 import { usePokedexStore } from '@/store/pokedex';
@@ -70,6 +70,14 @@ const seededRandom = (seed: string) => {
 };
 
 export default function QuizPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+      <QuizPageContent />
+    </Suspense>
+  );
+}
+
+function QuizPageContent() {
   const searchParams = useSearchParams();
   const targetPokemon = searchParams?.get('pokemon');
 

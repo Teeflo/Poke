@@ -7,7 +7,7 @@ import { pokemonKeys } from '@/lib/api/keys';
 import { PokemonCard, PokemonCardSkeleton } from './PokemonCard';
 import { useEffect, useRef, useMemo } from 'react';
 import { useInView } from 'framer-motion';
-import { Loader2, RotateCcw } from 'lucide-react';
+import { Loader2, RotateCcw, SearchX } from 'lucide-react';
 import { PokemonBasicData } from '@/types/pokemon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,7 +80,7 @@ export default function PokemonList() {
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextParam,
     enabled: isBasicMode,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 60 * 60 * 1000, // 1 hour
   });
 
   // 2. Mode Filtre par Type : Support multi-types (intersection)
@@ -88,7 +88,7 @@ export default function PokemonList() {
     queries: selectedTypes.map(type => ({
       queryKey: pokemonKeys.type(type),
       queryFn: () => getPokemonByType(type),
-      staleTime: 10 * 60 * 1000,
+      staleTime: 24 * 60 * 60 * 1000, // 24 hours
     }))
   });
 
@@ -97,7 +97,7 @@ export default function PokemonList() {
     queryKey: ['genPokemon', selectedGeneration],
     queryFn: () => (selectedGeneration ? getPokemonByGeneration(selectedGeneration.toString()) : Promise.resolve([])),
     enabled: !!selectedGeneration,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 
   // 4. Mode Recherche ou Filtres Avancés : On récupère toutes les données de base pour filtrer/trier
@@ -105,8 +105,32 @@ export default function PokemonList() {
     queryKey: pokemonKeys.allDetailed(),
     queryFn: getAllPokemonDetailed,
     enabled: !isBasicMode,
-    staleTime: 30 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
   });
+
+  // Pre-transform detailed data for faster filtering
+  const transformedDetailed = useMemo(() => {
+    if (!allDetailed) return [];
+    return allDetailed.map((p: PokemonBasicData) => ({
+      name: p.name,
+      url: `https://pokeapi.co/api/v2/pokemon/${p.id}/`,
+      id: p.id,
+      height: p.height,
+      weight: p.weight,
+      stats: p.pokemon_v2_pokemonstats?.map(s => s.base_stat) || [],
+      base_stat_total: p.pokemon_v2_pokemonstats?.reduce((acc, curr) => acc + curr.base_stat, 0) || 0,
+      is_legendary: p.pokemon_v2_pokemonspecy?.is_legendary || false,
+      is_mythical: p.pokemon_v2_pokemonspecy?.is_mythical || false,
+      types: p.pokemon_v2_pokemontypes?.map(t => t.pokemon_v2_type.name) || [],
+      egg_groups: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemonespeciesegggroups?.map(eg => eg.pokemon_v2_egggroup.name) || [],
+      color: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemoncolor?.name,
+      shape: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemonshape?.name,
+      localizedNames: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemonspeciesnames?.map(n => ({
+        language: n.pokemon_v2_language.name,
+        name: n.name
+      })) || []
+    }));
+  }, [allDetailed]);
 
   // Logique de fusion des résultats
   const displayedPokemon = useMemo(() => {
@@ -133,27 +157,8 @@ export default function PokemonList() {
         id: parseInt(p.url.split('/').filter(Boolean).pop() || '0')
       })) || [];
     } else {
-      if (!allDetailed) return [];
-
-      results = allDetailed.map((p: PokemonBasicData) => ({
-        name: p.name,
-        url: `https://pokeapi.co/api/v2/pokemon/${p.id}/`,
-        id: p.id,
-        height: p.height,
-        weight: p.weight,
-        stats: p.pokemon_v2_pokemonstats?.map(s => s.base_stat) || [],
-        base_stat_total: p.pokemon_v2_pokemonstats?.reduce((acc, curr) => acc + curr.base_stat, 0) || 0,
-        is_legendary: p.pokemon_v2_pokemonspecy?.is_legendary || false,
-        is_mythical: p.pokemon_v2_pokemonspecy?.is_mythical || false,
-        types: p.pokemon_v2_pokemontypes?.map(t => t.pokemon_v2_type.name) || [],
-        egg_groups: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemonespeciesegggroups?.map(eg => eg.pokemon_v2_egggroup.name) || [],
-        color: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemoncolor?.name,
-        shape: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemonshape?.name,
-        localizedNames: p.pokemon_v2_pokemonspecy?.pokemon_v2_pokemonspeciesnames?.map(n => ({
-          language: n.pokemon_v2_language.name,
-          name: n.name
-        })) || []
-      }));
+      if (transformedDetailed.length === 0) return [];
+      results = [...transformedDetailed];
 
       // Base de données source: Type & Gen
       if (selectedTypes.length > 0) {
@@ -322,6 +327,33 @@ export default function PokemonList() {
     );
   }
 
+  if (displayedPokemon.length === 0 && !isLoadingInfinite) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-6"
+      >
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full" />
+          <SearchX className="w-20 h-20 text-foreground/20 relative z-10" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-black uppercase tracking-tight text-foreground/80">{t('list.no_results')}</h3>
+          <p className="text-sm text-foreground/40 font-medium max-w-xs mx-auto uppercase tracking-widest">{t('list.no_results_desc')}</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={resetFilters}
+          className="rounded-full px-8 py-6 h-auto font-black uppercase tracking-[0.2em] text-xs border-primary/20 hover:bg-primary/10 hover:text-primary transition-all gap-2"
+        >
+          <RotateCcw className="w-4 h-4" />
+          {t('filters.reset')}
+        </Button>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="space-y-8 pb-20">
       {!isBasicMode && (
@@ -344,40 +376,50 @@ export default function PokemonList() {
         </div>
       )}
 
-      <div 
+      <motion.div 
+        layout
         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 px-2"
         onKeyDown={handleGridKeyDown}
       >
-        {displayedPokemon.map((p, idx) => (
-          <div key={`${p.id}-${idx}`} className="pokemon-grid-item">
-            <PokemonCard 
-              name={p.name} 
-              url={p.url} 
-              initialData={{
-                pokemon: {
-                  id: p.id,
-                  name: p.name,
-                  height: p.height,
-                  weight: p.weight,
-                  types: p.types?.map((t, i) => ({ slot: i + 1, type: { name: t, url: '' } })),
-                  stats: p.stats?.map((s, i) => ({ 
-                    base_stat: s, 
-                    effort: 0, 
-                    stat: { name: ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'][i], url: '' } 
-                  }))
-                },
-                species: {
-                  is_legendary: p.is_legendary,
-                  is_mythical: p.is_mythical,
-                  color: { name: p.color || '' },
-                  shape: { name: p.shape || '' },
-                  egg_groups: p.egg_groups?.map(eg => ({ name: eg, url: '' })) || []
-                }
-              }}
-            />
-          </div>
-        ))}
-      </div>
+        <AnimatePresence mode="popLayout">
+          {displayedPokemon.map((p, idx) => (
+            <motion.div 
+              layout
+              key={`${p.id}-${idx}`} 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              className="pokemon-grid-item"
+            >
+              <PokemonCard 
+                name={p.name} 
+                url={p.url} 
+                initialData={{
+                  pokemon: {
+                    id: p.id,
+                    name: p.name,
+                    height: p.height,
+                    weight: p.weight,
+                    types: p.types?.map((t, i) => ({ slot: i + 1, type: { name: t, url: '' } })),
+                    stats: p.stats?.map((s, i) => ({ 
+                      base_stat: s, 
+                      effort: 0, 
+                      stat: { name: ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'][i], url: '' } 
+                    }))
+                  },
+                  species: {
+                    is_legendary: p.is_legendary,
+                    is_mythical: p.is_mythical,
+                    color: { name: p.color || '' },
+                    egg_groups: p.egg_groups?.map(eg => ({ name: eg, url: '' })) || []
+                  }
+                }}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
 
       {isBasicMode && (
         <div ref={loadMoreRef} className="flex justify-center p-8">

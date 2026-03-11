@@ -25,6 +25,7 @@ import { useMemo, useEffect, useState, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { analyzeTeam, calculateSynergyScore } from '@/lib/team-analysis';
+import { cn } from '@/lib/utils';
 import { 
   ResponsiveContainer, 
   RadarChart, 

@@ -1,5 +1,19 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import { get, set, del } from 'idb-keyval';
+
+// Custom storage for IndexedDB
+const storage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    return (await get(name)) || null;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await set(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await del(name);
+  },
+};
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -316,6 +330,7 @@ export const usePokedexStore = create<PokedexStore>()(
     }),
     {
       name: 'pokedex-storage',
+      storage: createJSONStorage(() => storage),
       partialize: (state) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { searchTerm, systemLanguage, ...rest } = state;

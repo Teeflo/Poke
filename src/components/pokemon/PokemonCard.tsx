@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { PokemonDetail, PokemonSpecies, TYPE_COLORS } from '@/types/pokemon';
 import { motion } from 'framer-motion';
@@ -10,7 +10,7 @@ import { cn, formatId } from '@/lib/utils';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
-import { SVGProps } from 'react';
+import { SVGProps, memo, useCallback } from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -48,26 +48,10 @@ export function PokemonCardSkeleton() {
   );
 }
 
-export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
+export const PokemonCard = memo(function PokemonCard({ name, url, initialData }: PokemonCardProps) {
   const { t } = useTranslation();
-  const { 
-    isFavorite, 
-    addFavorite, 
-    removeFavorite, 
-    addToCompare, 
-    removeFromCompare, 
-    isInCompare,
-    compareList,
-    addToTeam,
-    removeFromTeam,
-    isInTeam,
-    team,
-    language,
-    systemLanguage,
-    isCaught,
-    toggleCaught
-  } = usePokedexStore();
-
+  const queryClient = useQueryClient();
+  
   const { data, isLoading } = useQuery<{
     pokemon: Partial<PokemonDetail>;
     species?: Partial<PokemonSpecies>;
@@ -90,6 +74,49 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
   });
 
   const displayData = initialData || data;
+  const pokemonId = displayData?.pokemon?.id || 0;
+
+  // Optimized selectors for better performance and reactivity
+  const isFav = usePokedexStore(state => state.favorites.includes(pokemonId));
+  const isComp = usePokedexStore(state => state.compareList.includes(pokemonId));
+  const isTeam = usePokedexStore(state => state.team.includes(pokemonId));
+  const caught = usePokedexStore(state => state.caughtPokemon.includes(pokemonId));
+  
+  const teamFull = usePokedexStore(state => state.team.length >= 6);
+  const compareFull = usePokedexStore(state => state.compareList.length >= 3);
+  
+  const language = usePokedexStore(state => state.language);
+  const systemLanguage = usePokedexStore(state => state.systemLanguage);
+
+  const {
+    addFavorite,
+    removeFavorite,
+    addToCompare,
+    removeFromCompare,
+    addToTeam,
+    removeFromTeam,
+    toggleCaught
+  } = usePokedexStore();
+
+  const prefetchDetails = useCallback(() => {
+    if (!name) return;
+    // Prefetch both pokemon and species data for the detail page
+    const speciesUrl = url.replace('/pokemon/', '/pokemon-species/');
+    queryClient.prefetchQuery({
+      queryKey: ['pokemon-card', name],
+      queryFn: async () => {
+        const [pokemonRes, speciesRes] = await Promise.all([
+          axios.get<PokemonDetail>(url),
+          axios.get<PokemonSpecies>(speciesUrl).catch(() => null)
+        ]);
+        return { 
+          pokemon: pokemonRes.data, 
+          species: speciesRes?.data as PokemonSpecies
+        };
+      },
+      staleTime: 10 * 60 * 1000,
+    });
+  }, [name, url, queryClient]);
 
   if (isLoading && !displayData) {
     return <PokemonCardSkeleton />;
@@ -98,11 +125,7 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
   if (!displayData || !displayData.pokemon) return null;
   const { pokemon, species } = displayData;
 
-  const pokemonId = pokemon.id!;
-  const isFav = isFavorite(pokemonId);
-  const isComp = isInCompare(pokemonId);
-  const isTeam = isInTeam(pokemonId);
-  const caught = isCaught(pokemonId);
+  // Use the derived pokemonId
   
   // Handle type data from both REST and GraphQL formats
   const gqlData = pokemon as unknown as { pokemon_v2_pokemontypes?: { pokemon_v2_type: { name: string } }[] };
@@ -168,7 +191,11 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
   const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
 
   return (
-    <Link href={`/pokemon/${name}`} className="block h-full py-4 px-2">
+    <Link 
+      href={`/pokemon/${name}`} 
+      className="block h-full py-4 px-2"
+      onMouseEnter={prefetchDetails}
+    >
       <motion.div
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.98 }}
@@ -213,13 +240,13 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={toggleTeam}
-              disabled={!isTeam && team.length >= 6}
+              disabled={!isTeam && teamFull}
               className={cn(
                 "p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm",
                 isTeam 
                   ? "bg-green-500/20 text-green-500 hover:bg-green-500/30" 
                   : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60",
-                !isTeam && team.length >= 6 && "opacity-20 cursor-not-allowed"
+                !isTeam && teamFull && "opacity-20 cursor-not-allowed"
               )}
               title={isTeam ? t('card.remove_team') : t('card.add_team')}
               aria-label={isTeam ? t('card.remove_team') || 'Remove from team' : t('card.add_team') || 'Add to team'}
@@ -231,13 +258,13 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={toggleCompare}
-              disabled={!isComp && compareList.length >= 3}
+              disabled={!isComp && compareFull}
               className={cn(
                 "p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm",
                 isComp 
                   ? "bg-primary/20 text-primary hover:bg-primary/30" 
                   : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60",
-                !isComp && compareList.length >= 3 && "opacity-20 cursor-not-allowed"
+                !isComp && compareFull && "opacity-20 cursor-not-allowed"
               )}
               title={isComp ? t('card.remove_compare') : t('card.add_compare')}
               aria-label={isComp ? t('card.remove_compare') || 'Remove from comparison' : t('card.add_compare') || 'Add to comparison'}
@@ -283,6 +310,7 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
             height={160}
             className="w-full h-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_15px_25px_rgba(0,0,0,0.5)] transition-transform duration-700 ease-out group-hover:scale-125 group-hover:-translate-y-3 relative z-10"
             priority={pokemonId <= 20}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
           />
         </div>
 
@@ -310,7 +338,7 @@ export function PokemonCard({ name, url, initialData }: PokemonCardProps) {
       </motion.div>
     </Link>
   );
-}
+});
 
 function PokeballIcon(props: SVGProps<SVGSVGElement>) {
   return (
