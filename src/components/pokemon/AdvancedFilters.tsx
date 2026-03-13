@@ -1,6 +1,6 @@
 'use client';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { TYPE_COLORS } from '@/types/pokemon';
 import { cn } from '@/lib/utils';
 import { 
@@ -81,7 +81,7 @@ export default function AdvancedFilters() {
     weightRange,
     setWeightRange,
     resetFilters
-  } = usePokedexStore();
+  } = useNeoDexStore();
   const { t } = useTranslation();
 
   const activeFiltersCount = [

@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 
 export function useKeyboardShortcuts() {
   const router = useRouter();
-  const { toggleSettings, setShowFavoritesOnly, showFavoritesOnly, compareList, team, theme, setTheme } = usePokedexStore();
+  const { toggleSettings, setShowFavoritesOnly, showFavoritesOnly, compareList, team, theme, setTheme } = useNeoDexStore();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

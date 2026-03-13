@@ -20,7 +20,7 @@ const storage: StateStorage = {
 
 type Theme = 'light' | 'dark' | 'system';
 
-interface PokedexStore {
+interface NeoDexStore {
   favorites: number[];
   addFavorite: (id: number) => void;
   removeFavorite: (id: number) => void;
@@ -149,7 +149,7 @@ interface PokedexStore {
   setHasHydrated: (state: boolean) => void;
 }
 
-export const usePokedexStore = create<PokedexStore>()(
+export const useNeoDexStore = create<NeoDexStore>()(
   persist(
     (set, get) => ({
       favorites: [],
@@ -348,7 +348,7 @@ export const usePokedexStore = create<PokedexStore>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: 'pokedex-storage',
+      name: 'neodex-storage',
       storage: createJSONStorage(() => storage),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

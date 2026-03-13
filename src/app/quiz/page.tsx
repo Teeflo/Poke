@@ -30,7 +30,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { PokemonDetail } from '@/types/pokemon';
 import { useTranslation } from '@/lib/i18n';
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -99,7 +99,7 @@ function QuizPageContent() {
   const [dailyIndex, setDailyIndex] = useState(0);
   
   const { t, i18n } = useTranslation();
-  const { language, systemLanguage, quizHighScores, updateQuizHighScore, addBadge, badges } = usePokedexStore();
+  const { language, systemLanguage, quizHighScores, updateQuizHighScore, addBadge, badges } = useNeoDexStore();
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);

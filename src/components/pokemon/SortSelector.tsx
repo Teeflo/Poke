@@ -1,6 +1,6 @@
 'use client';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { ArrowDownAZ, ArrowUpAZ, Hash, ListOrdered, ArrowDown10, ArrowUp10, Scale } from 'lucide-react';
 import {
   Select,
@@ -12,7 +12,7 @@ import {
 import { useTranslation } from '@/lib/i18n';
 
 export default function SortSelector() {
-  const { sortBy, setSortBy } = usePokedexStore();
+  const { sortBy, setSortBy } = useNeoDexStore();
   const { t } = useTranslation();
 
   const options = [

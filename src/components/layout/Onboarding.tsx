@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export function Onboarding() {
-  const { hasCompletedOnboarding, setHasCompletedOnboarding } = usePokedexStore();
+  const { hasCompletedOnboarding, setHasCompletedOnboarding } = useNeoDexStore();
   const [step, setStep] = useState(0);
   const { t } = useTranslation();
 

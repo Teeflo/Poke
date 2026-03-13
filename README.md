@@ -1,4 +1,4 @@
-# <p align="center">🎮 Ultra Pokédex</p>
+# <p align="center">🎮 NeoDex</p>
 
 <p align="center">
   <strong>The Ultimate High-Performance Pokémon Dashboard</strong>
@@ -16,9 +16,9 @@
 
 ## 🌟 Vision
 
-**Ultra Pokédex** isn't just a directory—it's a professional-grade **Gaming Dashboard** designed for competitive trainers and completionists alike. Built with a "Performance-First" mindset, it leverages the latest browser technologies to deliver a buttery-smooth experience with zero compromises on visual fidelity.
+**NeoDex** isn't just a directory—it's a professional-grade **Gaming Dashboard** designed for competitive trainers and completionists alike. Built with a "Performance-First" mindset, it leverages the latest browser technologies to deliver a buttery-smooth experience with zero compromises on visual fidelity.
 
-> *"A Pokédex that feels as powerful as a Master Ball."*
+> *"A NeoDex that feels as powerful as a Master Ball."*
 
 ---
 
@@ -37,7 +37,7 @@
 
 ## 🛠 Engineering Excellence
 
-The Ultra Pokédex is built on a foundation of strict architectural principles:
+The NeoDex is built on a foundation of strict architectural principles:
 
 - **💎 Visual Polish**: Leveraging **Framer Motion** for glassmorphic transitions and state-aware animations.
 - **⚡ Performance Core**: Optimized using **React Server Components (RSC)** for data-heavy sections and aggressive caching via **TanStack Query v5**.

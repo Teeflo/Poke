@@ -1,7 +1,7 @@
 'use client';
 
 import { useInfiniteQuery, useQuery, useQueries } from '@tanstack/react-query';
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { getPokemonList, getPokemonByType, getAllPokemonDetailed, getAllPokemonSummary, getPokemonByGeneration } from '@/lib/api';
 import { pokemonKeys } from '@/lib/api/keys';
 import { PokemonCard, PokemonCardSkeleton } from './PokemonCard';
@@ -17,29 +17,29 @@ export default function PokemonList() {
   const { t } = useTranslation();
   
   // Atomic selectors
-  const searchTerm = usePokedexStore(s => s.searchTerm);
-  const selectedTypes = usePokedexStore(s => s.selectedTypes);
-  const selectedGeneration = usePokedexStore(s => s.selectedGeneration);
-  const showFavoritesOnly = usePokedexStore(s => s.showFavoritesOnly);
-  const favorites = usePokedexStore(s => s.favorites);
-  const sortBy = usePokedexStore(s => s.sortBy);
-  const isLegendary = usePokedexStore(s => s.isLegendary);
-  const isMythical = usePokedexStore(s => s.isMythical);
-  const selectedEggGroups = usePokedexStore(s => s.selectedEggGroups);
-  const selectedColors = usePokedexStore(s => s.selectedColors);
-  const selectedShapes = usePokedexStore(s => s.selectedShapes);
-  const minBaseStats = usePokedexStore(s => s.minBaseStats);
-  const minAttack = usePokedexStore(s => s.minAttack);
-  const minDefense = usePokedexStore(s => s.minDefense);
-  const minSpeed = usePokedexStore(s => s.minSpeed);
-  const minHp = usePokedexStore(s => s.minHp);
-  const heightRange = usePokedexStore(s => s.heightRange);
-  const weightRange = usePokedexStore(s => s.weightRange);
-  const language = usePokedexStore(s => s.language);
-  const systemLanguage = usePokedexStore(s => s.systemLanguage);
-  const showCaughtOnly = usePokedexStore(s => s.showCaughtOnly);
-  const caughtPokemon = usePokedexStore(s => s.caughtPokemon);
-  const resetFilters = usePokedexStore(s => s.resetFilters);
+  const searchTerm = useNeoDexStore(s => s.searchTerm);
+  const selectedTypes = useNeoDexStore(s => s.selectedTypes);
+  const selectedGeneration = useNeoDexStore(s => s.selectedGeneration);
+  const showFavoritesOnly = useNeoDexStore(s => s.showFavoritesOnly);
+  const favorites = useNeoDexStore(s => s.favorites);
+  const sortBy = useNeoDexStore(s => s.sortBy);
+  const isLegendary = useNeoDexStore(s => s.isLegendary);
+  const isMythical = useNeoDexStore(s => s.isMythical);
+  const selectedEggGroups = useNeoDexStore(s => s.selectedEggGroups);
+  const selectedColors = useNeoDexStore(s => s.selectedColors);
+  const selectedShapes = useNeoDexStore(s => s.selectedShapes);
+  const minBaseStats = useNeoDexStore(s => s.minBaseStats);
+  const minAttack = useNeoDexStore(s => s.minAttack);
+  const minDefense = useNeoDexStore(s => s.minDefense);
+  const minSpeed = useNeoDexStore(s => s.minSpeed);
+  const minHp = useNeoDexStore(s => s.minHp);
+  const heightRange = useNeoDexStore(s => s.heightRange);
+  const weightRange = useNeoDexStore(s => s.weightRange);
+  const language = useNeoDexStore(s => s.language);
+  const systemLanguage = useNeoDexStore(s => s.systemLanguage);
+  const showCaughtOnly = useNeoDexStore(s => s.showCaughtOnly);
+  const caughtPokemon = useNeoDexStore(s => s.caughtPokemon);
+  const resetFilters = useNeoDexStore(s => s.resetFilters);
 
   const resolvedLang = language === 'auto' ? systemLanguage : language;
 

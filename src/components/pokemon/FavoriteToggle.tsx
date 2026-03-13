@@ -1,13 +1,13 @@
 'use client';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { Heart } from 'lucide-react';
 import { m } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 
 export default function FavoriteToggle() {
-  const { showFavoritesOnly, setShowFavoritesOnly, favorites } = usePokedexStore();
+  const { showFavoritesOnly, setShowFavoritesOnly, favorites } = useNeoDexStore();
   const { t } = useTranslation();
 
   return (

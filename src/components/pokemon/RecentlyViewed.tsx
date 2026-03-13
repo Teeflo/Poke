@@ -1,6 +1,6 @@
 'use client';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { History, Trash2 } from 'lucide-react';
 import { m } from 'framer-motion';
 import { formatId } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { useTranslation } from '@/lib/i18n';
 import Image from 'next/image';
 
 export default function RecentlyViewed() {
-  const { history, clearHistory } = usePokedexStore();
+  const { history, clearHistory } = useNeoDexStore();
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
 

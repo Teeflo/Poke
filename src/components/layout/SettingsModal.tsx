@@ -1,12 +1,12 @@
 'use client';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { X, Volume2, VolumeX, Sun, Moon, Monitor, Globe } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '@/lib/i18n';
 
 export default function SettingsModal() {
-  const { isSettingsOpen, toggleSettings, soundEnabled, toggleSound, theme, setTheme, language, setLanguage, systemLanguage } = usePokedexStore();
+  const { isSettingsOpen, toggleSettings, soundEnabled, toggleSound, theme, setTheme, language, setLanguage, systemLanguage } = useNeoDexStore();
   const { t, i18n } = useTranslation();
 
   const themeOptions = [

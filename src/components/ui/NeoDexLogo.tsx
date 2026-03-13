@@ -2,11 +2,11 @@
 
 import { m } from 'framer-motion';
 
-interface PokedexLogoProps {
+interface NeoDexLogoProps {
   className?: string;
 }
 
-export default function PokedexLogo({ className = 'w-10 h-10' }: PokedexLogoProps) {
+export default function NeoDexLogo({ className = 'w-10 h-10' }: NeoDexLogoProps) {
   return (
     <m.div 
       className={`relative flex items-center justify-center ${className}`}

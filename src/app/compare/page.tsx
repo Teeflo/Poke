@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/layout/Header';
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { useQueries } from '@tanstack/react-query';
 import { getPokemonDetail, getPokemonSpecies } from '@/lib/api';
 import { TYPE_COLORS } from '@/types/pokemon';
@@ -36,7 +36,7 @@ const STAT_KEYS = ['hp', 'attack', 'defense', 'special-attack', 'special-defense
 import Image from 'next/image';
 
 export default function ComparePage() {
-  const { language, systemLanguage, compareList, removeFromCompare, clearCompare } = usePokedexStore();
+  const { language, systemLanguage, compareList, removeFromCompare, clearCompare } = useNeoDexStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { t, i18n } = useTranslation();

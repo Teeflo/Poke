@@ -8,7 +8,7 @@ import { m } from 'framer-motion';
 
 import Image from 'next/image';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { getPokemonDetail, getPokemonSpecies } from '@/lib/api';
 import { formatId } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ interface ChainResponse {
 }
 
 function EvolutionItem({ name }: { name: string }) {
-  const { language, systemLanguage } = usePokedexStore();
+  const { language, systemLanguage } = useNeoDexStore();
   const resolvedLang = language === 'auto' ? systemLanguage : language;
 
   const { data: pokemonData } = useQuery({

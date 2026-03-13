@@ -1,6 +1,6 @@
 'use client';
 
-import { usePokedexStore } from '@/store/pokedex';
+import { useNeoDexStore } from '@/store/neodex';
 import { cn } from '@/lib/utils';
 import { X, Map } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
@@ -19,7 +19,7 @@ const REGIONS = [
 ];
 
 export default function RegionFilter() {
-  const { selectedGeneration, setSelectedGeneration } = usePokedexStore();
+  const { selectedGeneration, setSelectedGeneration } = useNeoDexStore();
   const { t } = useTranslation();
 
   return (
