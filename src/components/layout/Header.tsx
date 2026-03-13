@@ -13,7 +13,7 @@ import {
 import { usePokedexStore } from '@/store/pokedex';
 import SettingsModal from './SettingsModal';
 import { useEffect, useState, ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import PokedexLogo from '@/components/ui/PokedexLogo';
@@ -135,7 +135,7 @@ export default function Header() {
 
           <div className="flex-1 flex items-center justify-end gap-1.5 md:gap-2">
             <Link href="/favorites" aria-label={t('header.open_favorites')}>
-              <motion.div
+              <m.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="p-2 md:p-2.5 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-foreground hover:bg-red-500/10 hover:text-red-500 transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
@@ -143,10 +143,10 @@ export default function Header() {
               >
                 <Heart className="w-4 h-4 md:w-5 md:h-5" />
                 <span className="hidden xl:inline text-xs font-black uppercase tracking-widest px-1">{t('nav.favorites')}</span>
-              </motion.div>
+              </m.div>
             </Link>
 
-            <motion.button
+            <m.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={cycleLanguage}
@@ -156,9 +156,9 @@ export default function Header() {
             >
               <Languages className="w-4 h-4 text-foreground/40" />
               <span className="text-[10px] font-black uppercase">{languageLabel}</span>
-            </motion.button>
+            </m.button>
 
-            <motion.button
+            <m.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={cycleTheme}
@@ -175,9 +175,9 @@ export default function Header() {
                   <Sun className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
               )}
-            </motion.button>
+            </m.button>
 
-            <motion.button
+            <m.button
               whileHover={{ scale: 1.05, rotate: 45 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleSettings}
@@ -186,7 +186,7 @@ export default function Header() {
               aria-label={t('header.open_settings')}
             >
               <Settings className="w-4 h-4 md:w-5 md:h-5" />
-            </motion.button>
+            </m.button>
           </div>
         </div>
       </header>
@@ -194,3 +194,4 @@ export default function Header() {
     </>
   );
 }
+

@@ -1,9 +1,7 @@
-'use client';
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { PokemonDetail, PokemonSpecies, TYPE_COLORS } from '@/types/pokemon';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Heart, ArrowLeftRight, Plus, Minus } from 'lucide-react';
 import { usePokedexStore } from '@/store/pokedex';
 import { cn, formatId } from '@/lib/utils';
@@ -17,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface PokemonCardProps {
   name: string;
   url: string;
+  index?: number;
   initialData?: {
     pokemon: Partial<PokemonDetail>;
     species?: Partial<PokemonSpecies>;
@@ -48,22 +47,31 @@ export function PokemonCardSkeleton() {
   );
 }
 
-export const PokemonCard = memo(function PokemonCard({ name, url, initialData }: PokemonCardProps) {
-  const { t, i18n } = useTranslation();
+export const PokemonCard = memo(function PokemonCard({ name, url, index = 0, initialData }: PokemonCardProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 0);
-    return () => clearTimeout(timer);
+    setMounted(true);
   }, []);
   
-  const store = usePokedexStore();
-  const language = store.language;
-  const systemLanguage = store.systemLanguage;
+  // Use atomic selectors to prevent unnecessary re-renders
+  const language = usePokedexStore(s => s.language);
+  const systemLanguage = usePokedexStore(s => s.systemLanguage);
+  const favorites = usePokedexStore(s => s.favorites);
+  const compareList = usePokedexStore(s => s.compareList);
+  const team = usePokedexStore(s => s.team);
+  const caughtPokemon = usePokedexStore(s => s.caughtPokemon);
+  
+  const addFavorite = usePokedexStore(s => s.addFavorite);
+  const removeFavorite = usePokedexStore(s => s.removeFavorite);
+  const addToCompare = usePokedexStore(s => s.addToCompare);
+  const removeFromCompare = usePokedexStore(s => s.removeFromCompare);
+  const addToTeam = usePokedexStore(s => s.addToTeam);
+  const removeFromTeam = usePokedexStore(s => s.removeFromTeam);
+  const toggleCaught = usePokedexStore(s => s.toggleCaught);
 
-  // Find localized name based on user selected language
-  // We use store values directly instead of waiting for mounted to avoid English flash
   const resolvedLang = language === 'auto' ? systemLanguage : language;
 
   const { data, isLoading } = useQuery<{
@@ -83,7 +91,6 @@ export const PokemonCard = memo(function PokemonCard({ name, url, initialData }:
       };
     },
     staleTime: 10 * 60 * 1000,
-    // Only fetch if we don't have localized names in initialData
     enabled: !initialData?.species?.names || initialData.species.names.length === 0,
   });
 
@@ -116,112 +123,63 @@ export const PokemonCard = memo(function PokemonCard({ name, url, initialData }:
   const { pokemon, species } = displayData;
   const pokemonId = pokemon.id || 0;
 
-  const isFav = mounted && store.favorites.includes(pokemonId);
-  const isComp = mounted && store.compareList.includes(pokemonId);
-  const isTeam = mounted && store.team.includes(pokemonId);
-  const caught = mounted && store.caughtPokemon.includes(pokemonId);
+  const isFav = mounted && favorites.includes(pokemonId);
+  const isComp = mounted && compareList.includes(pokemonId);
+  const isTeam = mounted && team.includes(pokemonId);
+  const caught = mounted && caughtPokemon.includes(pokemonId);
   
-  const teamFull = mounted && store.team.length >= 6;
-  const compareFull = mounted && store.compareList.length >= 3;
+  const teamFull = mounted && team.length >= 6;
+  const compareFull = mounted && compareList.length >= 3;
 
-  const {
-    addFavorite,
-    removeFavorite,
-    addToCompare,
-    removeFromCompare,
-    addToTeam,
-    removeFromTeam,
-    toggleCaught
-  } = store;
-
-  // Handle type data from both REST and GraphQL formats
-  const gqlData = pokemon as unknown as { pokemon_v2_pokemontypes?: { pokemon_v2_type: { name: string } }[] };
-  const types = pokemon.types || gqlData.pokemon_v2_pokemontypes?.map((t) => ({ type: { name: t.pokemon_v2_type.name } })) || [];
+  const types = pokemon.types || (pokemon as any).pokemon_v2_pokemontypes?.map((t: any) => ({ type: { name: t.pokemon_v2_type.name } })) || [];
   const mainType = types[0]?.type?.name || 'normal';
   const color = TYPE_COLORS[mainType] || '#A8A77A';
 
   const toggleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isFav) {
-      removeFavorite(pokemonId);
-    } else {
-      addFavorite(pokemonId);
-    }
+    e.preventDefault(); e.stopPropagation();
+    isFav ? removeFavorite(pokemonId) : addFavorite(pokemonId);
   };
 
   const toggleCompare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isComp) {
-      removeFromCompare(pokemonId);
-    } else {
-      addToCompare(pokemonId);
-    }
+    e.preventDefault(); e.stopPropagation();
+    isComp ? removeFromCompare(pokemonId) : addToCompare(pokemonId);
   };
 
   const toggleTeam = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isTeam) {
-      removeFromTeam(pokemonId);
-    } else {
-      addToTeam(pokemonId);
-    }
+    e.preventDefault(); e.stopPropagation();
+    isTeam ? removeFromTeam(pokemonId) : addToTeam(pokemonId);
   };
 
   const handleToggleCaught = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     toggleCaught(pokemonId);
   };
 
-  // Improved name selection logic
   const getLocalizedName = () => {
-    // 1. Try species.names from data or initialData
-    if (species?.names && species.names.length > 0) {
-      const entry = species.names.find(n => n.language.name === resolvedLang)
-        || species.names.find(n => n.language.name === 'en');
+    if (species?.names?.length) {
+      const entry = species.names.find(n => n.language.name === resolvedLang) || species.names.find(n => n.language.name === 'en');
       if (entry) return entry.name;
     }
-
-    // 2. Try localizedNames from initialData (GraphQL format)
-    const gqlSpeciesData = pokemon as unknown as { 
-      localizedNames?: { language: string; name: string }[];
-    };
-    if (gqlSpeciesData.localizedNames && gqlSpeciesData.localizedNames.length > 0) {
-      const entry = gqlSpeciesData.localizedNames.find(n => n.language === resolvedLang)
-        || gqlSpeciesData.localizedNames.find(n => n.language === 'en');
+    const gqlSpeciesData = pokemon as any;
+    if (gqlSpeciesData.localizedNames?.length) {
+      const entry = gqlSpeciesData.localizedNames.find((n: any) => n.language === resolvedLang) || gqlSpeciesData.localizedNames.find((n: any) => n.language === 'en');
       if (entry) return entry.name;
     }
-
-    // 3. Fallback to API name (usually English)
     return pokemon.name!;
   };
 
   const displayName = getLocalizedName();
-
   const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
 
   return (
-    <Link 
-      href={`/pokemon/${name}`} 
-      className="block h-full py-4 px-2"
-      onMouseEnter={prefetchDetails}
-    >
-      <motion.div
+    <Link href={`/pokemon/${name}`} className="block h-full py-4 px-2" onMouseEnter={prefetchDetails}>
+      <m.div
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.98 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 400, 
-          damping: 17,
-          duration: 0.2
-        }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
         className="glass-panel type-glow relative h-full p-6 flex flex-col items-center group overflow-hidden rounded-[2rem]"
         style={{ '--type-color': `${color}40` } as React.CSSProperties}
       >
-        {/* Caught Badge */}
         <button 
           onClick={handleToggleCaught}
           className={cn(
@@ -234,158 +192,70 @@ export const PokemonCard = memo(function PokemonCard({ name, url, initialData }:
           <PokeballIcon className={cn("w-6 h-6", caught ? "text-red-500" : "text-foreground")} />
         </button>
 
-        {/* Colorful background mesh */}
-        <div 
-          className="absolute -top-20 -right-20 w-48 h-48 rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity duration-700 ease-in-out"
-          style={{ backgroundColor: color }}
-        />
-        <div 
-          className="absolute -bottom-20 -left-20 w-48 h-48 rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-opacity duration-700 ease-in-out"
-          style={{ backgroundColor: color }}
-        />
-
-        {/* Top bar with ID and Actions */}
+        <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity duration-700" style={{ backgroundColor: color }} />
+        
         <div className="flex justify-between items-center w-full z-10 mb-4">
-          <span className="text-sm font-black text-foreground/50 drop-shadow-sm group-hover:text-foreground/80 transition-colors">
-            {formatId(pokemonId)}
-          </span>
+          <span className="text-sm font-black text-foreground/50 group-hover:text-foreground/80 transition-colors">{formatId(pokemonId)}</span>
           <div className="flex items-center gap-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleTeam}
-              disabled={!isTeam && teamFull}
-              className={cn(
-                "p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm",
-                isTeam 
-                  ? "bg-green-500/20 text-green-500 hover:bg-green-500/30" 
-                  : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60",
-                !isTeam && teamFull && "opacity-20 cursor-not-allowed"
-              )}
-              title={isTeam ? t('card.remove_team') : t('card.add_team')}
-              aria-label={isTeam ? t('card.remove_team') || 'Remove from team' : t('card.add_team') || 'Add to team'}
+            <m.button
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+              onClick={toggleTeam} disabled={!isTeam && teamFull}
+              className={cn("p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm", isTeam ? "bg-green-500/20 text-green-500 hover:bg-green-500/30" : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60", !isTeam && teamFull && "opacity-20 cursor-not-allowed")}
             >
               {isTeam ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            </motion.button>
+            </m.button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleCompare}
-              disabled={!isComp && compareFull}
-              className={cn(
-                "p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm",
-                isComp 
-                  ? "bg-primary/20 text-primary hover:bg-primary/30" 
-                  : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60",
-                !isComp && compareFull && "opacity-20 cursor-not-allowed"
-              )}
-              title={isComp ? t('card.remove_compare') : t('card.add_compare')}
-              aria-label={isComp ? t('card.remove_compare') || 'Remove from comparison' : t('card.add_compare') || 'Add to comparison'}
+            <m.button
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+              onClick={toggleCompare} disabled={!isComp && compareFull}
+              className={cn("p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm", isComp ? "bg-primary/20 text-primary hover:bg-primary/30" : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60", !isComp && compareFull && "opacity-20 cursor-not-allowed")}
             >
               <ArrowLeftRight className={cn("w-4 h-4 transition-transform", isComp && "scale-110")} />
-            </motion.button>
+            </m.button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <m.button
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
               onClick={toggleFavorite}
-              className={cn(
-                "p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm",
-                isFav 
-                  ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
-                  : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60"
-              )}
-              title={isFav ? t('card.remove_favorite') : t('card.add_favorite')}
-              aria-label={isFav ? t('card.remove_favorite') || 'Remove from favorites' : t('card.add_favorite') || 'Add to favorites'}
+              className={cn("p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm", isFav ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" : "bg-secondary/40 text-foreground/40 hover:text-foreground/80 hover:bg-secondary/60")}
             >
-              <motion.div
-                animate={isFav ? {
-                  scale: [1, 1.4, 1],
-                  transition: { duration: 0.3 }
-                } : {}}
-              >
+              <m.div animate={isFav ? { scale: [1, 1.4, 1], transition: { duration: 0.3 } } : {}}>
                 <Heart className={cn("w-4 h-4 transition-transform", isFav && "fill-current scale-110")} />
-              </motion.div>
-            </motion.button>
+              </m.div>
+            </m.button>
           </div>
         </div>
 
-        {/* Pokemon Image */}
         <div className="relative w-40 h-40 my-2 z-10 flex items-center justify-center">
-          <div 
-            className="absolute inset-0 rounded-full blur-[30px] opacity-20 group-hover:opacity-50 group-hover:scale-125 transition-all duration-700 ease-in-out"
-            style={{ backgroundColor: color }}
-          />
+          <div className="absolute inset-0 rounded-full blur-[30px] opacity-20 group-hover:opacity-50 group-hover:scale-125 transition-all duration-700" style={{ backgroundColor: color }} />
           <Image
-            src={spriteUrl}
-            alt={displayName}
-            width={160}
-            height={160}
-            className="w-full h-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_15px_25px_rgba(0,0,0,0.5)] transition-transform duration-700 ease-out group-hover:scale-125 group-hover:-translate-y-3 relative z-10"
-            priority={pokemonId <= 20}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+            src={spriteUrl} alt={displayName} width={160} height={160}
+            className="w-full h-full object-contain drop-shadow-xl transition-transform duration-700 ease-out group-hover:scale-125 group-hover:-translate-y-3 relative z-10"
+            priority={index < 10}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
         </div>
 
-        {/* Info Section */}
         <div className="mt-auto w-full text-center z-10 pt-6">
-          <h3 className="text-2xl font-black text-foreground capitalize mb-4 tracking-tighter drop-shadow-sm">
-            {displayName}
-          </h3>
-
+          <h3 className="text-2xl font-black text-foreground capitalize mb-4 tracking-tighter">{displayName}</h3>
           <div className="flex justify-center gap-2 flex-wrap mb-2">
-            {types.map((typeItem: { type: { name: string } }) => (
-              <span
-                key={typeItem.type.name}
-                className="glass-tag"
-                style={{ 
-                  backgroundColor: `${TYPE_COLORS[typeItem.type.name]}cc`,
-                  borderColor: TYPE_COLORS[typeItem.type.name]
-                }}
-              >
+            {types.map((typeItem: any) => (
+              <span key={typeItem.type.name} className="glass-tag" style={{ backgroundColor: `${TYPE_COLORS[typeItem.type.name]}cc`, borderColor: TYPE_COLORS[typeItem.type.name] }}>
                 {t(`types.${typeItem.type.name}`)}
               </span>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </Link>
   );
 });
 
 function PokeballIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      {...props}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 12H22"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r="3"
-        fill={props.className?.includes('text-red-500') ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" fill={props.className?.includes('text-red-500') ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

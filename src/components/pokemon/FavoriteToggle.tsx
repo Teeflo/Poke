@@ -2,7 +2,7 @@
 
 import { usePokedexStore } from '@/store/pokedex';
 import { Heart } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 
@@ -11,7 +11,7 @@ export default function FavoriteToggle() {
   const { t } = useTranslation();
 
   return (
-    <motion.button
+    <m.button
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -24,6 +24,7 @@ export default function FavoriteToggle() {
     >
       <Heart className={cn("w-4 h-4 transition-transform", showFavoritesOnly && "fill-current scale-110")} />
       <span>{t('favorites.toggle', { count: favorites.length })}</span>
-    </motion.button>
+    </m.button>
   );
 }
+

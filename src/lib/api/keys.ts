@@ -10,5 +10,6 @@ export const pokemonKeys = {
   encounters: (id: number) => [...pokemonKeys.all, 'encounters', id] as const,
   names: () => [...pokemonKeys.all, 'names'] as const,
   allDetailed: (lang: string) => [...pokemonKeys.all, 'all-detailed', lang] as const,
+  allSummary: (lang: string) => [...pokemonKeys.all, 'all-summary', lang] as const,
   localized: (name: string, langId: number) => [...pokemonKeys.all, 'localized', name, langId] as const,
 };

@@ -2,7 +2,7 @@
 
 import { usePokedexStore } from '@/store/pokedex';
 import { History, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { formatId } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ export default function RecentlyViewed() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
         {history.map((p, idx) => (
           <Link key={`${p.id}-${idx}`} href={`/pokemon/${p.name}`}>
-            <motion.div 
+            <m.div 
               whileHover={{ y: -5, scale: 1.05 }}
               className="glass-panel p-3 rounded-2xl flex flex-col items-center text-center gap-2 group border-white/5 hover:border-primary/20 transition-all"
             >
@@ -70,10 +70,11 @@ export default function RecentlyViewed() {
                 <p className="text-[8px] font-black text-foreground/30">{formatId(p.id)}</p>
                 <p className="text-[10px] font-black capitalize truncate max-w-full text-foreground/70 group-hover:text-primary transition-colors">{p.name}</p>
               </div>
-            </motion.div>
+            </m.div>
           </Link>
         ))}
       </div>
     </section>
   );
 }
+

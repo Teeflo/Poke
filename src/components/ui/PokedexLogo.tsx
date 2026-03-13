@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 interface PokedexLogoProps {
   className?: string;
@@ -8,7 +8,7 @@ interface PokedexLogoProps {
 
 export default function PokedexLogo({ className = 'w-10 h-10' }: PokedexLogoProps) {
   return (
-    <motion.div 
+    <m.div 
       className={`relative flex items-center justify-center ${className}`}
       whileHover="hover"
       initial="initial"
@@ -30,7 +30,7 @@ export default function PokedexLogo({ className = 'w-10 h-10' }: PokedexLogoProp
         {/* Center Button Housing */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/3 bg-black rounded-full flex items-center justify-center z-10 shadow-md">
           {/* Inner Button */}
-          <motion.div 
+          <m.div 
             className="w-2/3 h-2/3 bg-white rounded-full border border-gray-400"
             variants={{
               hover: { 
@@ -43,6 +43,7 @@ export default function PokedexLogo({ className = 'w-10 h-10' }: PokedexLogoProp
         </div>
       </div>
 
-    </motion.div>
+    </m.div>
   );
 }
+

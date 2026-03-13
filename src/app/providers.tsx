@@ -6,28 +6,7 @@ import { usePokedexStore } from '@/store/pokedex';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/lib/i18n';
 import { getAllPokemonDetailed } from '@/lib/api';
-
-function CacheInitializer() {
-  useEffect(() => {
-    // Check if we already have the data in IndexedDB before preloading
-    const checkAndPreload = async () => {
-      try {
-        const { get } = await import('idb-keyval');
-        const cached = await get('poke-cache-all-pokemon-detailed-v5');
-        if (!cached) {
-          await getAllPokemonDetailed();
-        }
-      } catch (error) {
-        console.error('Failed to check cache:', error);
-        getAllPokemonDetailed().catch(console.error);
-      }
-    };
-    
-    checkAndPreload();
-  }, []);
-
-  return null;
-}
+import { LazyMotion, domMax } from 'framer-motion';
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme, setSystemLanguage, language, systemLanguage, _hasHydrated } = usePokedexStore();
@@ -95,8 +74,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <CacheInitializer />
-        {children}
+        <LazyMotion features={domMax} strict>
+          {children}
+        </LazyMotion>
       </ThemeProvider>
     </QueryClientProvider>
   );

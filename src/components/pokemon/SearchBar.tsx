@@ -2,17 +2,31 @@
 
 import { usePokedexStore } from '@/store/pokedex';
 import { Search, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
+import { useQueryClient } from '@tanstack/react-query';
+import { pokemonKeys } from '@/lib/api/keys';
+import { getAllPokemonSummary } from '@/lib/api';
 
 export default function SearchBar() {
-  const { searchTerm, setSearchTerm } = usePokedexStore();
+  const { searchTerm, setSearchTerm, language, systemLanguage } = usePokedexStore();
   const [localSearch, setLocalSearch] = useState(searchTerm);
   const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+
+  const resolvedLang = language === 'auto' ? systemLanguage : language;
+
+  const prefetchIndex = useCallback(() => {
+    queryClient.prefetchQuery({
+      queryKey: pokemonKeys.allSummary(resolvedLang),
+      queryFn: () => getAllPokemonSummary(),
+      staleTime: 24 * 60 * 60 * 1000,
+    });
+  }, [queryClient, resolvedLang]);
 
   useEffect(() => {
     setMounted(true);
@@ -43,7 +57,7 @@ export default function SearchBar() {
   }, []);
 
   return (
-    <motion.div
+    <m.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.1, duration: 0.5 }}
@@ -60,7 +74,11 @@ export default function SearchBar() {
           type="text"
           placeholder={t('search.placeholder')}
           value={mounted ? localSearch : ''}
-          onChange={(e) => setLocalSearch(e.target.value)}
+          onFocus={prefetchIndex}
+          onChange={(e) => {
+            setLocalSearch(e.target.value);
+            prefetchIndex();
+          }}
           className="w-full pl-12 pr-12 py-7 rounded-full bg-secondary/30 backdrop-blur-xl border border-white/20 dark:border-white/10 text-foreground placeholder:text-foreground/40 text-lg font-medium shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-all focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50"
           aria-label={t('search.placeholder')}
           id="pokemon-search"
@@ -69,7 +87,7 @@ export default function SearchBar() {
 
       <AnimatePresence>
         {localSearch && (
-          <motion.button
+          <m.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -81,10 +99,11 @@ export default function SearchBar() {
             aria-label={t('search.clear')}
           >
             <X className="w-5 h-5" />
-          </motion.button>
+          </m.button>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 }
+
 

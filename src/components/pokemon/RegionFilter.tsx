@@ -3,7 +3,7 @@
 import { usePokedexStore } from '@/store/pokedex';
 import { cn } from '@/lib/utils';
 import { X, Map } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '@/lib/i18n';
 
 const REGIONS = [
@@ -23,7 +23,7 @@ export default function RegionFilter() {
   const { t } = useTranslation();
 
   return (
-    <motion.div 
+    <m.div 
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.1, duration: 0.5 }}
@@ -37,7 +37,7 @@ export default function RegionFilter() {
 
         <AnimatePresence mode="popLayout">
           {selectedGeneration && (
-            <motion.button
+            <m.button
               initial={{ scale: 0.8, opacity: 0, width: 0 }}
               animate={{ scale: 1, opacity: 1, width: 'auto' }}
               exit={{ scale: 0.8, opacity: 0, width: 0 }}
@@ -47,7 +47,7 @@ export default function RegionFilter() {
             >
               <X className="w-3 h-3" />
               <span className="font-bold uppercase tracking-tighter">{t('filters.reset')}</span>
-            </motion.button>
+            </m.button>
           )}
         </AnimatePresence>
         
@@ -73,6 +73,7 @@ export default function RegionFilter() {
           );
         })}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
+

@@ -24,7 +24,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { PokemonEncounter, TYPE_COLORS } from '@/types/pokemon';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { usePokedexStore } from '@/store/pokedex';
 import { cn, formatId, formatName } from '@/lib/utils';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -303,7 +303,7 @@ export default function PokemonDetailPage() {
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.div
+          <m.div
             key={showShiny ? 'shiny' : 'normal'}
             initial={{ y: 50, opacity: 0, scale: 0.9 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -324,12 +324,12 @@ export default function PokemonDetailPage() {
               className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-10 transition-transform duration-700 group-hover:scale-110 group-hover:-translate-y-4"
               priority
             />
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-30 max-w-6xl">
-        <motion.div
+        <m.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -413,9 +413,9 @@ export default function PokemonDetailPage() {
             </div>
           )}
 
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -515,7 +515,7 @@ export default function PokemonDetailPage() {
                       </span>
                       <div className="flex-1 h-3.5 rounded-full bg-secondary/50 overflow-hidden border border-white/5 relative">
                         <div className="absolute inset-0 bg-black/10 shadow-inner" />
-                        <motion.div
+                        <m.div
                           initial={{ width: 0 }}
                           animate={{ width: `${Math.min((s.base_stat / statMax) * 100, 100)}%` }}
                           transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
@@ -526,7 +526,7 @@ export default function PokemonDetailPage() {
                           }}
                         >
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                        </motion.div>
+                        </m.div>
                       </div>
                     </div>
                   ))}
@@ -873,7 +873,7 @@ export default function PokemonDetailPage() {
               </div>
             </TabsContent>
           </Tabs>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );

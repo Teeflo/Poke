@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   LucideProps
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export function Onboarding() {
@@ -74,7 +74,7 @@ export function Onboarding() {
       <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden bg-background/80 backdrop-blur-xl border-white/10 rounded-[2.5rem]">
         <div className="p-8">
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={step}
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -91,7 +91,7 @@ export function Onboarding() {
                   {steps[step].desc}
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           </AnimatePresence>
 
           <div className="flex justify-center gap-1.5 mt-10">
@@ -152,3 +152,4 @@ function LayoutGridIcon(props: LucideProps) {
     </svg>
   );
 }
+

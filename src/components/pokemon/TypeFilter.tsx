@@ -4,7 +4,7 @@ import { usePokedexStore } from '@/store/pokedex';
 import { TYPE_COLORS } from '@/types/pokemon';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '@/lib/i18n';
 
 export default function TypeFilter() {
@@ -13,7 +13,7 @@ export default function TypeFilter() {
   const { t } = useTranslation();
 
   return (
-    <motion.div 
+    <m.div 
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.2, duration: 0.5 }}
@@ -22,7 +22,7 @@ export default function TypeFilter() {
       <div className="flex flex-nowrap lg:flex-wrap gap-3 justify-start lg:justify-center px-4 min-w-max lg:min-w-0 mx-auto max-w-7xl">
         <AnimatePresence>
           {selectedTypes.length > 0 && (
-            <motion.button
+            <m.button
               initial={{ scale: 0.8, opacity: 0, width: 0 }}
               animate={{ scale: 1, opacity: 1, width: 'auto' }}
               exit={{ scale: 0.8, opacity: 0, width: 0 }}
@@ -32,7 +32,7 @@ export default function TypeFilter() {
             >
               <X className="w-4 h-4" />
               <span className="font-semibold">{t('filters.clear_types', { count: selectedTypes.length })}</span>
-            </motion.button>
+            </m.button>
           )}
         </AnimatePresence>
         
@@ -64,7 +64,7 @@ export default function TypeFilter() {
               )}
               <span className="relative z-10 flex items-center gap-2">
                 {isActive && (
-                  <motion.span 
+                  <m.span 
                     layoutId="activeTypeIndicator"
                     className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" 
                   />
@@ -75,6 +75,7 @@ export default function TypeFilter() {
           );
         })}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
+

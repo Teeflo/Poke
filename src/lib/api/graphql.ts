@@ -3,8 +3,48 @@ import { GRAPHQL_API_BASE } from './client';
 import { getCachedData, setCachedData } from './cache';
 import { PokemonBasicData } from '@/types/pokemon';
 
+export const getAllPokemonSummary = async () => {
+  const cacheKey = 'all-pokemon-summary-v1';
+  
+  // Check cache first
+  const cached = await getCachedData<any[]>(cacheKey, true);
+  if (cached) return cached;
+
+  try {
+    const query = `
+      query {
+        pokemon_v2_pokemon(limit: 1500, order_by: {id: asc}) {
+          id
+          name
+          pokemon_v2_pokemonspecy {
+            generation_id
+            pokemon_v2_pokemonspeciesnames(where: {pokemon_v2_language: {name: {_in: ["en", "fr", "es", "de", "it", "ja", "ko"]}}}) {
+              name
+              pokemon_v2_language {
+                name
+              }
+            }
+          }
+          pokemon_v2_pokemontypes {
+            pokemon_v2_type {
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    const { data } = await axios.post<{ data: { pokemon_v2_pokemon: any[] } }>(GRAPHQL_API_BASE, { query });
+    const results = data.data.pokemon_v2_pokemon;
+    await setCachedData(cacheKey, results);
+    return results;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAllPokemonDetailed = async () => {
-  const cacheKey = 'all-pokemon-detailed-v5';
+  const cacheKey = 'all-pokemon-detailed-v6';
   
   // Check cache first
   const cached = await getCachedData<PokemonBasicData[]>(cacheKey, true);
@@ -57,8 +97,6 @@ export const getAllPokemonDetailed = async () => {
     await setCachedData(cacheKey, results);
     return results;
   } catch (error) {
-    // If request fails but we have stale cache, it was already returned above.
-    // If we reach here, it means both failed.
     throw error;
   }
 };

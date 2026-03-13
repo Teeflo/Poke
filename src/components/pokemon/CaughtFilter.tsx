@@ -1,7 +1,7 @@
 'use client';
 
 import { usePokedexStore } from '@/store/pokedex';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { SVGProps } from 'react';
 import { useTranslation } from '@/lib/i18n';
@@ -19,7 +19,7 @@ export default function CaughtFilter() {
   return (
     <div className="flex bg-secondary/40 backdrop-blur-md border border-white/10 rounded-full p-1 shadow-sm">
       {modes.map((mode) => (
-        <motion.button
+        <m.button
           key={mode.id}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -33,7 +33,7 @@ export default function CaughtFilter() {
         >
           {mode.id === 'caught' && <PokeballIcon className="w-3 h-3" />}
           <span>{mode.label}</span>
-        </motion.button>
+        </m.button>
       ))}
     </div>
   );
@@ -74,3 +74,4 @@ function PokeballIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+

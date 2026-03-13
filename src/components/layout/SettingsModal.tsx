@@ -2,7 +2,7 @@
 
 import { usePokedexStore } from '@/store/pokedex';
 import { X, Volume2, VolumeX, Sun, Moon, Monitor, Globe } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '@/lib/i18n';
 
 export default function SettingsModal() {
@@ -41,7 +41,7 @@ export default function SettingsModal() {
           aria-modal="true"
           aria-label={t('settings.title')}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -49,7 +49,7 @@ export default function SettingsModal() {
             onClick={toggleSettings}
           />
 
-          <motion.div
+          <m.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -151,9 +151,10 @@ export default function SettingsModal() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>
   );
 }
+
