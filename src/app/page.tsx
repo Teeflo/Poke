@@ -23,8 +23,38 @@ export default async function Home() {
     initialPageParam: 0,
   });
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'PrimeDex',
+    url: 'https://primedex.vercel.app',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://primedex.vercel.app/?search={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const softwareAppJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'PrimeDex Dashboard',
+    operatingSystem: 'All',
+    applicationCategory: 'GameApplication',
+    description: 'A high-performance Gaming Dashboard for Pokémon tracking and team building.',
+    url: 'https://primedex.vercel.app',
+  };
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppJsonLd) }}
+      />
       <div className="min-h-screen bg-transparent relative">
         <Header />
 
@@ -32,9 +62,9 @@ export default async function Home() {
           <section className="text-center mb-12 pt-10">
             <div className="inline-block mb-6 relative group">
               <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full group-hover:bg-primary/50 transition-colors duration-700" />
-              <h2 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary to-orange-500 tracking-tighter drop-shadow-sm relative z-10">
+              <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary to-orange-500 tracking-tighter drop-shadow-sm relative z-10">
                 {t('home.hero_title')}
-              </h2>
+              </h1>
             </div>
             <p className="text-foreground/60 mt-2 text-sm md:text-base font-bold tracking-[0.2em] uppercase">
               {t('home.hero_subtitle')}

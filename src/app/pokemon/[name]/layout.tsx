@@ -22,9 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title,
       description,
+      alternates: {
+        canonical: `/pokemon/${name}`,
+      },
       openGraph: {
         title,
         description,
+        url: `/pokemon/${name}`,
         images: [{ url: artwork || '' }],
         type: 'website',
       },
@@ -42,10 +46,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function PokemonLayout({
+export default async function PokemonLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ name: string }>;
 }) {
-  return <>{children}</>;
+  const { name } = await params;
+  let jsonLd = null;
+
+  try {
+    const pokemon = await getPokemonDetail(name);
+    const displayName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+    const imageUrl = pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default;
+
+    jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Dataset',
+      name: `${displayName} Pokémon Data`,
+      description: `Comprehensive data including stats, abilities, and moves for ${displayName}.`,
+      url: `https://primedex.vercel.app/pokemon/${name}`,
+      creator: {
+        '@type': 'Organization',
+        name: 'PrimeDex',
+      },
+      image: imageUrl,
+      keywords: `Pokemon, ${displayName}, ${pokemon.types.map((t: any) => t.type.name).join(', ')}`,
+    };
+  } catch (e) {}
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      {children}
+    </>
+  );
 }

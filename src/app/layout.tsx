@@ -11,19 +11,29 @@ const displayFont = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-display",
+  display: "swap",
 });
 
 const bodyFont = Manrope({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-body",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://primedex.vercel.app"),
   title: t("meta.title"),
   description: t("meta.description"),
   keywords: t("meta.keywords", { returnObjects: true }) as unknown as string[],
   authors: [{ name: t("meta.author") }],
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en": "/en",
+      "fr": "/fr"
+    }
+  },
   robots: {
     index: true,
     follow: true,
